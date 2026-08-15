@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DieCast Market · Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<style>
+  :root{
+    --accent:#e2231a; --accent-dark:#b8180f;
+    --surface-2:#ffffff; --surface-1:#f4f3f0; --surface-0:#eceae4;
+    --text-primary:#1a1a1a; --text-secondary:#65635c; --text-muted:#9c998f;
+    --border:#dedad2; --border-strong:#c7c2b7;
+    --radius:10px;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--surface-0); color:var(--text-primary); font-family:var(--font-sans); }
+  input, select, button, textarea { font-family:var(--font-sans); font-size:14px; }
+  input, select { height:36px; padding:0 10px; border:0.5px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--text-primary); width:100%; }
+  button { height:36px; padding:0 14px; border:0.5px solid var(--border-strong); border-radius:8px; background:transparent; color:var(--text-primary); cursor:pointer; }
+  button:hover { background:var(--surface-1); }
+  button.primary { background:var(--accent); color:#fff; border:none; }
+  button.primary:hover { background:var(--accent-dark); }
+  button.danger { color:#b91c1c; border-color:#fca5a5; }
+
+  .login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
+  .login-box { background:var(--surface-2); border:0.5px solid var(--border); border-radius:14px; padding:28px; width:100%; max-width:360px; }
+  .login-box h1 { font-family:'Teko',sans-serif; font-size:32px; margin:0 0 4px; text-transform:uppercase; }
+  .login-box p { font-size:13px; color:var(--text-secondary); margin:0 0 18px; }
+  .login-box .field { margin-bottom:12px; }
+  .login-box label { display:block; font-size:13px; color:var(--text-secondary); margin-bottom:4px; }
+  .login-error { color:#b91c1c; font-size:13px; margin-top:8px; min-height:16px; }
+
+  .topbar { background:var(--surface-2); border-bottom:0.5px solid var(--border); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .topbar h1 { font-family:'Teko',sans-serif; font-size:26px; margin:0; text-transform:uppercase; }
+
+  .page { max-width:1000px; margin:0 auto; padding:24px 20px 80px; }
+  .layout { display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start; }
+  @media (max-width: 760px){ .layout{ grid-template-columns:1fr; } }
+  .panel { background:var(--surface-2); border:0.5px solid var(--border); border-radius:12px; padding:1rem 1.25rem; }
+  .field { margin-bottom:12px; }
+  .field label { display:block; font-size:13px; color:var(--text-secondary); margin-bottom:4px; }
+  .imgdrop { border:1px dashed var(--border-strong); border-radius:8px; padding:14px; text-align:center; cursor:pointer; font-size:13px; color:var(--text-secondary); }
+  .imgdrop:hover { background:var(--surface-1); }
+
+  .plist { display:flex; flex-direction:column; gap:10px; }
+  .prow { background:var(--surface-2); border:0.5px solid var(--border); border-radius:10px; padding:10px; display:flex; gap:12px; align-items:center; }
+  .prow img { width:56px; height:56px; object-fit:cover; border-radius:8px; flex-shrink:0; background:var(--surface-1); }
+  .prow-info { flex:1; min-width:0; }
+  .prow-name { font-weight:700; font-size:14px; }
+  .prow-meta { font-size:12px; color:var(--text-secondary); }
+  .prow-status { font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; text-transform:uppercase; display:inline-block; margin-top:2px; }
+  .st-available { background:#dcfce7; color:#166534; }
+  .st-reserved { background:#fef3c7; color:#92400e; }
+  .st-sold { background:#e5e7eb; color:#374151; }
+  .prow-buyer { font-size:11px; color:var(--text-muted); margin-top:2px; }
+  .prow-actions { display:flex; flex-direction:column; gap:4px; }
+  .prow-actions button { height:28px; padding:0 10px; font-size:12px; }
+
+  .status { text-align:center; padding:2rem; color:var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <h1>DieCast Market</h1>
+    <p>Panel de administrador</p>
+    <div class="field"><label>Correo</label><input id="loginEmail" type="email" placeholder="tu@correo.com"></div>
+    <div class="field"><label>Contraseña</label><input id="loginPassword" type="password" placeholder="••••••••"></div>
+    <button class="primary" id="loginBtn" style="width:100%;">Entrar</button>
+    <div class="login-error" id="loginError"></div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="adminWrap" style="display:none;">
+  <div class="topbar">
+    <h1>DieCast Market · Admin</h1>
+    <button id="logoutBtn"><i class="ti ti-logout"></i> Salir</button>
+  </div>
+
+  <div class="page">
+    <div class="layout">
+
+      <div class="panel">
+        <h3 style="margin-top:0;">Agregar carrito</h3>
+        <div class="field">
+          <label>Foto</label>
+          <div class="imgdrop" id="imgDrop"><i class="ti ti-photo-plus" style="font-size:20px"></i><div id="imgDropLabel">Subir imagen</div></div>
+          <input type="file" id="imgInput" accept="image/*" style="display:none">
+        </div>
+        <div class="field"><label>Marca</label><input id="pBrand" placeholder="Hot Wheels"></div>
+        <div class="field"><label>Nombre del modelo</label><input id="pName" placeholder="'73 Jeep J10"></div>
+        <div class="field"><label>Precio (COP)</label><input id="pPrice" type="number" placeholder="35000"></div>
+        <button class="primary" id="addBtn" style="width:100%;">Publicar</button>
+        <div class="login-error" id="addStatus"></div>
+      </div>
+
+      <div>
+        <h3 style="margin-top:0;">Catálogo (<span id="countLabel">0</span>)</h3>
+        <div id="loadingMsg" class="status">Cargando...</div>
+        <div class="plist" id="plist"></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+  import {
+    getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+    onSnapshot, query, orderBy, serverTimestamp
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyApx1vVDRtCFVqz_SIYi2-AQhVT3uMPu64",
+    authDomain: "diecastmarket-a650c.firebaseapp.com",
+    projectId: "diecastmarket-a650c",
+    storageBucket: "diecastmarket-a650c.firebasestorage.app",
+    messagingSenderId: "110334522122",
+    appId: "1:110334522122:web:8720b2241ebbaa5aad40f3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  const el = id => document.getElementById(id);
+
+  // ---------- Auth ----------
+  el('loginBtn').addEventListener('click', async ()=>{
+    const email = el('loginEmail').value.trim();
+    const pass = el('loginPassword').value;
+    el('loginError').textContent = '';
+    try {
+      await signInWithEmailAndPassword(auth, email, pass);
+    } catch(e){
+      el('loginError').textContent = 'Correo o contraseña incorrectos.';
+    }
+  });
+
+  el('logoutBtn').addEventListener('click', ()=> signOut(auth));
+
+  onAuthStateChanged(auth, (user)=>{
+    if(user){
+      el('loginWrap').style.display = 'none';
+      el('adminWrap').style.display = 'block';
+      startCatalogListener();
+    } else {
+      el('loginWrap').style.display = 'flex';
+      el('adminWrap').style.display = 'none';
+    }
+  });
+
+  // ---------- Image upload (compressed to base64) ----------
+  let currentImage = null;
+  el('imgDrop').addEventListener('click', ()=> el('imgInput').click());
+  el('imgInput').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      const img = new Image();
+      img.onload = function(){
+        const maxW = 700;
+        const scale = Math.min(1, maxW / img.width);
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width * scale;
+        canvas.height = img.height * scale;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        currentImage = canvas.toDataURL('image/jpeg', 0.82);
+        el('imgDropLabel').textContent = 'Imagen cargada · cambiar';
+      };
+      img.src = ev.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+
+  // ---------- Add product ----------
+  el('addBtn').addEventListener('click', async ()=>{
+    const brand = el('pBrand').value.trim();
+    const name = el('pName').value.trim();
+    const price = parseInt(el('pPrice').value, 10);
+    const statusEl = el('addStatus');
+    statusEl.style.color = '#b91c1c';
+
+    if(!name || !price){
+      statusEl.textContent = 'Ponle al menos el nombre y el precio.';
+      return;
+    }
+    try {
+      await addDoc(collection(db, 'products'), {
+        brand: brand || '',
+        name,
+        price,
+        image: currentImage || '',
+        status: 'available',
+        buyerId: null,
+        reservedBy: null,
+        reservedAt: null,
+        createdAt: serverTimestamp()
+      });
+      el('pBrand').value = ''; el('pName').value = ''; el('pPrice').value = '';
+      currentImage = null;
+      el('imgDropLabel').textContent = 'Subir imagen';
+      statusEl.style.color = '#166534';
+      statusEl.textContent = 'Publicado.';
+      setTimeout(()=> statusEl.textContent = '', 2000);
+    } catch(e){
+      statusEl.textContent = 'Error al publicar: ' + e.message;
+    }
+  });
+
+  // ---------- Catalog list + management ----------
+  function formatCOP(n){ return '$' + Number(n||0).toLocaleString('es-CO'); }
+  function formatTimestamp(ts){
+    if(!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString('es-CO', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  }
+
+  let listenerStarted = false;
+  function startCatalogListener(){
+    if(listenerStarted) return;
+    listenerStarted = true;
+    const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+    onSnapshot(q, (snap)=>{
+      el('loadingMsg').style.display = 'none';
+      const items = [];
+      snap.forEach(d=> items.push({ id: d.id, ...d.data() }));
+      el('countLabel').textContent = items.length;
+      renderList(items);
+    });
+  }
+
+  function renderList(items){
+    const list = el('plist');
+    list.innerHTML = '';
+    items.forEach(p=>{
+      const row = document.createElement('div');
+      row.className = 'prow';
+      const statusClass = p.status === 'available' ? 'st-available' : (p.status === 'reserved' ? 'st-reserved' : 'st-sold');
+      const statusLabel = p.status === 'available' ? 'Disponible' : (p.status === 'reserved' ? 'Reservado' : 'Vendido');
+
+      row.innerHTML = `
+        ${p.image ? `<img src="${p.image}">` : `<div style="width:56px;height:56px;border-radius:8px;background:var(--surface-1);flex-shrink:0;"></div>`}
+        <div class="prow-info">
+          <div class="prow-name">${p.name}</div>
+          <div class="prow-meta">${p.brand||''} · ${formatCOP(p.price)}</div>
+          <div class="prow-status ${statusClass}">${statusLabel}</div>
+          ${p.reservedBy ? `<div class="prow-buyer">${p.reservedBy}${p.reservedAt ? ' · ' + formatTimestamp(p.reservedAt) : ''}</div>` : ''}
+        </div>
+        <div class="prow-actions"></div>
+      `;
+
+      const actions = row.querySelector('.prow-actions');
+
+      if(p.status === 'reserved'){
+        const confirmBtn = document.createElement('button');
+        confirmBtn.textContent = 'Confirmar venta';
+        confirmBtn.addEventListener('click', ()=> updateDoc(doc(db,'products',p.id), { status:'sold' }));
+        actions.appendChild(confirmBtn);
+
+        const releaseBtn = document.createElement('button');
+        releaseBtn.textContent = 'Liberar';
+        releaseBtn.addEventListener('click', ()=> updateDoc(doc(db,'products',p.id), { status:'available', buyerId:null, reservedBy:null, reservedAt:null }));
+        actions.appendChild(releaseBtn);
+      }
+
+      if(p.status === 'sold'){
+        const releaseBtn = document.createElement('button');
+        releaseBtn.textContent = 'Reactivar';
+        releaseBtn.addEventListener('click', ()=> updateDoc(doc(db,'products',p.id), { status:'available', buyerId:null, reservedBy:null, reservedAt:null }));
+        actions.appendChild(releaseBtn);
+      }
+
+      const delBtn = document.createElement('button');
+      delBtn.className = 'danger';
+      delBtn.textContent = 'Eliminar';
+      delBtn.addEventListener('click', ()=>{
+        if(confirm('¿Eliminar "'+p.name+'" del catálogo?')) deleteDoc(doc(db,'products',p.id));
+      });
+      actions.appendChild(delBtn);
+
+      list.appendChild(row);
+    });
+  }
+</script>
+</body>
+</html>

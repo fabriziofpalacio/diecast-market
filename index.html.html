@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DieCast Market · Tienda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Teko:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/2.44.0/iconfont/tabler-icons.min.css">
+<style>
+  :root{
+    --accent:#e2231a; --accent-dark:#b8180f;
+    --surface-2:#ffffff; --surface-1:#f4f3f0; --surface-0:#eceae4;
+    --text-primary:#1a1a1a; --text-secondary:#65635c; --text-muted:#9c998f;
+    --border:#dedad2; --border-strong:#c7c2b7;
+    --radius:10px;
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin:0; padding:0; background:var(--surface-0); color:var(--text-primary); font-family:var(--font-sans); }
+  .topbar { position:sticky; top:0; z-index:20; background:var(--surface-2); border-bottom:0.5px solid var(--border); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .topbar h1 { font-family:'Teko',sans-serif; font-size:28px; font-weight:600; margin:0; letter-spacing:.01em; text-transform:uppercase; }
+  .cart-btn { position:relative; height:38px; padding:0 16px; border-radius:20px; border:none; background:var(--accent); color:#fff; font-weight:600; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:6px; }
+  .cart-badge { background:#fff; color:var(--accent); border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+
+  .page { max-width:1000px; margin:0 auto; padding:24px 20px 80px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:18px; }
+
+  .card { background:var(--surface-2); border:0.5px solid var(--border); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; }
+  .card-photo { aspect-ratio:4/3; background:var(--surface-1); position:relative; overflow:hidden; }
+  .card-photo img { width:100%; height:100%; object-fit:cover; display:block; }
+  .card-photo .badge { position:absolute; top:8px; left:8px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:.03em; }
+  .badge-available { background:#16a34a; color:#fff; }
+  .badge-reserved { background:#f59e0b; color:#1a1a1a; }
+  .badge-sold { background:#6b7280; color:#fff; }
+
+  .card-body { padding:12px 14px 14px; display:flex; flex-direction:column; gap:6px; flex:1; }
+  .card-brand { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
+  .card-name { font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:700; line-height:1.2; }
+  .card-price { font-family:'Teko',sans-serif; font-size:26px; font-weight:600; color:var(--accent-dark); margin-top:2px; }
+  .card-meta { font-size:11px; color:var(--text-muted); }
+
+  button { font-family:var(--font-sans); cursor:pointer; }
+  .buy-btn { margin-top:auto; height:38px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.02em; }
+  .buy-btn:hover { background:var(--accent-dark); }
+  .buy-btn:disabled { background:var(--border-strong); color:var(--text-muted); cursor:not-allowed; }
+  .buy-btn.mine { background:#16a34a; }
+
+  .empty { text-align:center; padding:4rem 1rem; color:var(--text-secondary); }
+
+  /* modal */
+  .overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:50; padding:20px; }
+  .overlay.show { display:flex; }
+  .modal { background:var(--surface-2); border-radius:14px; padding:22px; width:100%; max-width:420px; max-height:85vh; overflow-y:auto; }
+  .modal h2 { font-family:'Teko',sans-serif; font-size:26px; margin:0 0 12px; text-transform:uppercase; }
+  .modal .field { margin-bottom:12px; }
+  .modal label { display:block; font-size:13px; color:var(--text-secondary); margin-bottom:4px; }
+  .modal input { width:100%; height:38px; padding:0 10px; border:0.5px solid var(--border); border-radius:8px; font-size:14px; }
+  .modal-actions { display:flex; gap:8px; margin-top:16px; }
+  .modal-actions button { flex:1; height:40px; border-radius:8px; border:0.5px solid var(--border-strong); background:transparent; font-weight:600; }
+  .modal-actions .primary { background:var(--accent); color:#fff; border:none; }
+  .close-x { position:absolute; top:14px; right:16px; background:none; border:none; font-size:20px; color:var(--text-muted); }
+
+  .cart-item { display:flex; gap:10px; padding:10px 0; border-bottom:0.5px solid var(--border); }
+  .cart-item img { width:56px; height:56px; object-fit:cover; border-radius:8px; flex-shrink:0; }
+  .cart-item-info { flex:1; }
+  .cart-item-info .name { font-weight:700; font-size:14px; }
+  .cart-item-info .price { font-size:13px; color:var(--text-secondary); }
+  .cart-total { display:flex; justify-content:space-between; font-family:'Teko',sans-serif; font-size:24px; font-weight:600; margin-top:14px; padding-top:14px; border-top:2px solid var(--border); }
+  .whatsapp-btn { margin-top:14px; width:100%; height:44px; border-radius:8px; border:none; background:#25d366; color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; }
+
+  .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1a1a; color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; z-index:60; opacity:0; pointer-events:none; transition:opacity .2s; max-width:90vw; text-align:center; }
+  .toast.show { opacity:1; }
+
+  .status { text-align:center; padding:2rem; color:var(--text-secondary); }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <h1>DieCast Market</h1>
+  <button class="cart-btn" id="cartBtn"><i class="ti ti-shopping-cart"></i> Mi canasta <span class="cart-badge" id="cartCount">0</span></button>
+</div>
+
+<div class="page">
+  <div id="loadingMsg" class="status">Cargando catálogo...</div>
+  <div class="grid" id="grid" style="display:none;"></div>
+  <div class="empty" id="emptyMsg" style="display:none;">Todavía no hay carritos publicados. Vuelve pronto.</div>
+</div>
+
+<!-- Buyer info modal (first time reserving) -->
+<div class="overlay" id="buyerOverlay">
+  <div class="modal" style="position:relative;">
+    <button class="close-x" id="closeBuyerModal">&times;</button>
+    <h2>Tus datos de contacto</h2>
+    <p style="font-size:13px; color:var(--text-secondary); margin-top:-6px;">Los necesitamos para confirmar tu reserva y coordinar el pago.</p>
+    <div class="field"><label>Nombre</label><input id="buyerNameInput" placeholder="Tu nombre"></div>
+    <div class="field"><label>WhatsApp</label><input id="buyerPhoneInput" placeholder="Ej: 3001234567"></div>
+    <div class="modal-actions">
+      <button class="primary" id="saveBuyerBtn" style="width:100%;">Continuar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Cart modal -->
+<div class="overlay" id="cartOverlay">
+  <div class="modal" style="position:relative;">
+    <button class="close-x" id="closeCartModal">&times;</button>
+    <h2>Mi canasta</h2>
+    <div id="cartItems"></div>
+    <div id="cartEmptyMsg" style="display:none; color:var(--text-secondary); font-size:14px; padding:12px 0;">Aún no has reservado ningún carrito.</div>
+    <div class="cart-total" id="cartTotal" style="display:none;"><span>Total</span><span id="cartTotalValue">$0</span></div>
+    <button class="whatsapp-btn" id="whatsappBtn" style="display:none;"><i class="ti ti-brand-whatsapp"></i> Confirmar por WhatsApp</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+  import {
+    getFirestore, collection, doc, onSnapshot, runTransaction,
+    serverTimestamp, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyApx1vVDRtCFVqz_SIYi2-AQhVT3uMPu64",
+    authDomain: "diecastmarket-a650c.firebaseapp.com",
+    projectId: "diecastmarket-a650c",
+    storageBucket: "diecastmarket-a650c.firebasestorage.app",
+    messagingSenderId: "110334522122",
+    appId: "1:110334522122:web:8720b2241ebbaa5aad40f3"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // ---------- WhatsApp / seller contact number (shown in the checkout message) ----------
+  const SELLER_WHATSAPP = "573045299111"; // TODO: reemplaza por tu número real, con indicativo de país, sin + ni espacios
+
+  const el = id => document.getElementById(id);
+
+  // ---------- Buyer identity (stored locally, reused across visits) ----------
+  function getBuyerId(){
+    let id = localStorage.getItem('dm_buyerId');
+    if(!id){
+      id = 'b_' + Date.now() + '_' + Math.random().toString(36).slice(2,10);
+      localStorage.setItem('dm_buyerId', id);
+    }
+    return id;
+  }
+  const buyerId = getBuyerId();
+  function getBuyerInfo(){
+    return {
+      name: localStorage.getItem('dm_buyerName') || '',
+      phone: localStorage.getItem('dm_buyerPhone') || ''
+    };
+  }
+  function hasBuyerInfo(){
+    const b = getBuyerInfo();
+    return b.name.trim().length > 0 && b.phone.trim().length > 0;
+  }
+
+  // ---------- Toast ----------
+  let toastTimer;
+  function showToast(msg){
+    const t = el('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(()=> t.classList.remove('show'), 3200);
+  }
+
+  function formatCOP(n){
+    return '$' + Number(n||0).toLocaleString('es-CO');
+  }
+
+  // ---------- Live catalog ----------
+  let products = [];
+  const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
+  onSnapshot(q, (snap)=>{
+    products = [];
+    snap.forEach(d=> products.push({ id: d.id, ...d.data() }));
+    renderGrid();
+    renderCart();
+  }, (err)=>{
+    el('loadingMsg').textContent = 'No se pudo cargar el catálogo. Intenta más tarde.';
+    console.error(err);
+  });
+
+  function renderGrid(){
+    el('loadingMsg').style.display = 'none';
+    const grid = el('grid');
+    if(!products.length){
+      grid.style.display = 'none';
+      el('emptyMsg').style.display = 'block';
+      return;
+    }
+    el('emptyMsg').style.display = 'none';
+    grid.style.display = 'grid';
+    grid.innerHTML = '';
+    products.forEach(p=>{
+      const isMine = p.buyerId === buyerId;
+      const card = document.createElement('div');
+      card.className = 'card';
+
+      let badgeHtml = '';
+      let btnHtml = '';
+      if(p.status === 'available'){
+        badgeHtml = '<span class="badge badge-available">Disponible</span>';
+        btnHtml = '<button class="buy-btn" data-id="'+p.id+'">Reservar</button>';
+      } else if(p.status === 'reserved'){
+        badgeHtml = '<span class="badge badge-reserved">'+(isMine?'Reservado por ti':'Reservado')+'</span>';
+        btnHtml = '<button class="buy-btn'+(isMine?' mine':'')+'" disabled>'+(isMine?'✓ Es tuyo':'Ya reservado')+'</button>';
+      } else {
+        badgeHtml = '<span class="badge badge-sold">Vendido</span>';
+        btnHtml = '<button class="buy-btn" disabled>Vendido</button>';
+      }
+
+      card.innerHTML = `
+        <div class="card-photo">
+          ${p.image ? `<img src="${p.image}" alt="${p.name}">` : ''}
+          ${badgeHtml}
+        </div>
+        <div class="card-body">
+          <div class="card-brand">${p.brand||''}</div>
+          <div class="card-name">${p.name||'Sin nombre'}</div>
+          <div class="card-price">${formatCOP(p.price)}</div>
+          ${btnHtml}
+        </div>
+      `;
+      const buyBtn = card.querySelector('.buy-btn[data-id]');
+      if(buyBtn) buyBtn.addEventListener('click', ()=> attemptReserve(p.id));
+      grid.appendChild(card);
+    });
+  }
+
+  // ---------- Reservation flow ----------
+  let pendingProductId = null;
+
+  function attemptReserve(productId){
+    if(!hasBuyerInfo()){
+      pendingProductId = productId;
+      el('buyerNameInput').value = getBuyerInfo().name;
+      el('buyerPhoneInput').value = getBuyerInfo().phone;
+      el('buyerOverlay').classList.add('show');
+      return;
+    }
+    doReserve(productId);
+  }
+
+  async function doReserve(productId){
+    const productRef = doc(db, 'products', productId);
+    const { name, phone } = getBuyerInfo();
+    try {
+      await runTransaction(db, async (tx)=>{
+        const snap = await tx.get(productRef);
+        if(!snap.exists()) throw new Error('not-found');
+        const data = snap.data();
+        if(data.status !== 'available') throw new Error('taken');
+        tx.update(productRef, {
+          status: 'reserved',
+          buyerId: buyerId,
+          reservedBy: name + ' - ' + phone,
+          reservedAt: serverTimestamp()
+        });
+      });
+      showToast('¡Listo! Quedó reservado para ti.');
+    } catch(e){
+      if(e.message === 'taken'){
+        showToast('Justo se acaban de adelantar — alguien más lo reservó primero.');
+      } else {
+        showToast('No se pudo reservar. Intenta de nuevo.');
+        console.error(e);
+      }
+    }
+  }
+
+  el('closeBuyerModal').addEventListener('click', ()=>{
+    el('buyerOverlay').classList.remove('show');
+    pendingProductId = null;
+  });
+
+  el('saveBuyerBtn').addEventListener('click', ()=>{
+    const name = el('buyerNameInput').value.trim();
+    const phone = el('buyerPhoneInput').value.trim();
+    if(!name || !phone){
+      showToast('Completa tu nombre y WhatsApp para continuar.');
+      return;
+    }
+    localStorage.setItem('dm_buyerName', name);
+    localStorage.setItem('dm_buyerPhone', phone);
+    el('buyerOverlay').classList.remove('show');
+    if(pendingProductId){
+      doReserve(pendingProductId);
+      pendingProductId = null;
+    }
+  });
+
+  // ---------- Cart ----------
+  function myItems(){
+    return products.filter(p=> p.buyerId === buyerId && (p.status === 'reserved' || p.status === 'sold'));
+  }
+
+  function renderCart(){
+    const items = myItems();
+    el('cartCount').textContent = items.length;
+    const container = el('cartItems');
+    container.innerHTML = '';
+    if(!items.length){
+      el('cartEmptyMsg').style.display = 'block';
+      el('cartTotal').style.display = 'none';
+      el('whatsappBtn').style.display = 'none';
+      return;
+    }
+    el('cartEmptyMsg').style.display = 'none';
+    el('cartTotal').style.display = 'flex';
+    el('whatsappBtn').style.display = 'flex';
+    let total = 0;
+    items.forEach(p=>{
+      total += Number(p.price||0);
+      const row = document.createElement('div');
+      row.className = 'cart-item';
+      row.innerHTML = `
+        ${p.image ? `<img src="${p.image}">` : ''}
+        <div class="cart-item-info">
+          <div class="name">${p.name}</div>
+          <div class="price">${formatCOP(p.price)} · ${p.status==='sold' ? 'Vendido' : 'Reservado'}</div>
+        </div>
+      `;
+      container.appendChild(row);
+    });
+    el('cartTotalValue').textContent = formatCOP(total);
+
+    el('whatsappBtn').onclick = ()=>{
+      const { name } = getBuyerInfo();
+      const lines = items.map(p=> `• ${p.name} — ${formatCOP(p.price)}`).join('%0A');
+      const msg = `Hola! Soy ${name}, quiero confirmar mi pedido de DieCast Market:%0A%0A${lines}%0A%0A*Total: ${formatCOP(total)}*`;
+      window.open(`https://wa.me/${SELLER_WHATSAPP}?text=${msg}`, '_blank');
+    };
+  }
+
+  el('cartBtn').addEventListener('click', ()=> el('cartOverlay').classList.add('show'));
+  el('closeCartModal').addEventListener('click', ()=> el('cartOverlay').classList.remove('show'));
+</script>
+</body>
+</html>
