@@ -31,6 +31,7 @@
   .card-photo img { width:100%; height:100%; object-fit:cover; display:block; }
   .card-photo .badge { position:absolute; top:8px; left:8px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:.03em; }
   .card-photo .zoom-hint { position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,.55); color:#fff; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .reserved-time { font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:4px; margin-top:-2px; }
 
   .lightbox-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; align-items:center; justify-content:center; z-index:70; padding:20px; }
   .lightbox-overlay.show { display:flex; }
@@ -150,7 +151,7 @@
   const db = getFirestore(app);
 
   // ---------- WhatsApp / seller contact number (shown in the checkout message) ----------
-  const SELLER_WHATSAPP = "573045299111"; // TODO: reemplaza por tu número real, con indicativo de país, sin + ni espacios
+  const SELLER_WHATSAPP = "573045299111";
 
   const el = id => document.getElementById(id);
 
@@ -189,6 +190,12 @@
     return '$' + Number(n||0).toLocaleString('es-CO');
   }
 
+  function formatTimestamp(ts){
+    if(!ts) return '';
+    const d = ts.toDate ? ts.toDate() : new Date(ts);
+    return d.toLocaleString('es-CO', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+  }
+
   // ---------- Live catalog ----------
   let products = [];
   const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
@@ -220,15 +227,18 @@
 
       let badgeHtml = '';
       let btnHtml = '';
+      let timeHtml = '';
       if(p.status === 'available'){
         badgeHtml = '<span class="badge badge-available">Disponible</span>';
         btnHtml = '<button class="buy-btn" data-id="'+p.id+'">Reservar</button>';
       } else if(p.status === 'reserved'){
         badgeHtml = '<span class="badge badge-reserved">'+(isMine?'Reservado por ti':'Reservado')+'</span>';
         btnHtml = '<button class="buy-btn'+(isMine?' mine':'')+'" disabled>'+(isMine?'✓ Es tuyo':'Ya reservado')+'</button>';
+        if(p.reservedAt) timeHtml = '<div class="reserved-time"><i class="ti ti-clock"></i> Reservado a las '+formatTimestamp(p.reservedAt)+'</div>';
       } else {
         badgeHtml = '<span class="badge badge-sold">Vendido</span>';
         btnHtml = '<button class="buy-btn" disabled>Vendido</button>';
+        if(p.reservedAt) timeHtml = '<div class="reserved-time"><i class="ti ti-clock"></i> Reservado a las '+formatTimestamp(p.reservedAt)+'</div>';
       }
 
       card.innerHTML = `
@@ -240,6 +250,7 @@
         <div class="card-body">
           <div class="card-brand">${p.brand||''}</div>
           <div class="card-name">${p.name||'Sin nombre'}</div>
+          ${timeHtml}
           <div class="card-price">${formatCOP(p.price)}</div>
           ${btnHtml}
         </div>
