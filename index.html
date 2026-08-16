@@ -27,9 +27,16 @@
   .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:18px; }
 
   .card { background:var(--surface-2); border:0.5px solid var(--border); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; }
-  .card-photo { aspect-ratio:4/3; background:var(--surface-1); position:relative; overflow:hidden; }
+  .card-photo { aspect-ratio:4/3; background:var(--surface-1); position:relative; overflow:hidden; cursor:zoom-in; }
   .card-photo img { width:100%; height:100%; object-fit:cover; display:block; }
   .card-photo .badge { position:absolute; top:8px; left:8px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:.03em; }
+  .card-photo .zoom-hint { position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,.55); color:#fff; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; }
+
+  .lightbox-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; align-items:center; justify-content:center; z-index:70; padding:20px; }
+  .lightbox-overlay.show { display:flex; }
+  .lightbox-overlay img { max-width:100%; max-height:85vh; border-radius:8px; object-fit:contain; }
+  .lightbox-close { position:absolute; top:18px; right:22px; background:none; border:none; color:#fff; font-size:32px; line-height:1; cursor:pointer; }
+  .lightbox-caption { position:absolute; bottom:24px; left:0; right:0; text-align:center; color:#fff; font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:600; }
   .badge-available { background:#16a34a; color:#fff; }
   .badge-reserved { background:#f59e0b; color:#1a1a1a; }
   .badge-sold { background:#6b7280; color:#fff; }
@@ -114,6 +121,13 @@
   </div>
 </div>
 
+<!-- Image lightbox -->
+<div class="lightbox-overlay" id="lightboxOverlay">
+  <button class="lightbox-close" id="lightboxClose">&times;</button>
+  <img id="lightboxImg" src="" alt="">
+  <div class="lightbox-caption" id="lightboxCaption"></div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script type="module">
@@ -136,7 +150,7 @@
   const db = getFirestore(app);
 
   // ---------- WhatsApp / seller contact number (shown in the checkout message) ----------
-  const SELLER_WHATSAPP = "573045299111"; // TODO: reemplaza por tu número real, con indicativo de país, sin + ni espacios
+  const SELLER_WHATSAPP = "573001234567"; // TODO: reemplaza por tu número real, con indicativo de país, sin + ni espacios
 
   const el = id => document.getElementById(id);
 
@@ -221,6 +235,7 @@
         <div class="card-photo">
           ${p.image ? `<img src="${p.image}" alt="${p.name}">` : ''}
           ${badgeHtml}
+          ${p.image ? `<div class="zoom-hint"><i class="ti ti-zoom-in"></i></div>` : ''}
         </div>
         <div class="card-body">
           <div class="card-brand">${p.brand||''}</div>
@@ -231,9 +246,31 @@
       `;
       const buyBtn = card.querySelector('.buy-btn[data-id]');
       if(buyBtn) buyBtn.addEventListener('click', ()=> attemptReserve(p.id));
+      if(p.image){
+        const photoEl = card.querySelector('.card-photo');
+        photoEl.addEventListener('click', ()=> openLightbox(p.image, (p.brand?p.brand+' · ':'')+p.name));
+      }
       grid.appendChild(card);
     });
   }
+
+  // ---------- Lightbox ----------
+  function openLightbox(src, caption){
+    el('lightboxImg').src = src;
+    el('lightboxCaption').textContent = caption || '';
+    el('lightboxOverlay').classList.add('show');
+  }
+  function closeLightbox(){
+    el('lightboxOverlay').classList.remove('show');
+    el('lightboxImg').src = '';
+  }
+  el('lightboxClose').addEventListener('click', closeLightbox);
+  el('lightboxOverlay').addEventListener('click', (e)=>{
+    if(e.target.id === 'lightboxOverlay') closeLightbox();
+  });
+  document.addEventListener('keydown', (e)=>{
+    if(e.key === 'Escape') closeLightbox();
+  });
 
   // ---------- Reservation flow ----------
   let pendingProductId = null;
