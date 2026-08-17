@@ -18,52 +18,59 @@
   }
   * { box-sizing: border-box; }
   html, body { margin:0; padding:0; background:var(--surface-0); color:var(--text-primary); font-family:var(--font-sans); }
+  input, select, button { font-family:var(--font-sans); font-size:14px; }
+  input, select { height:36px; padding:0 10px; border:0.5px solid var(--border); border-radius:8px; background:var(--surface-2); color:var(--text-primary); }
+
   .topbar { position:sticky; top:0; z-index:20; background:var(--surface-2); border-bottom:0.5px solid var(--border); padding:12px 20px; display:flex; align-items:center; justify-content:space-between; }
   .topbar h1 { font-family:'Teko',sans-serif; font-size:28px; font-weight:600; margin:0; letter-spacing:.01em; text-transform:uppercase; }
   .cart-btn { position:relative; height:38px; padding:0 16px; border-radius:20px; border:none; background:var(--accent); color:#fff; font-weight:600; font-size:14px; cursor:pointer; display:flex; align-items:center; gap:6px; }
   .cart-badge { background:#fff; color:var(--accent); border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
 
   .page { max-width:1000px; margin:0 auto; padding:24px 20px 80px; }
+
+  .filters { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:20px; background:var(--surface-2); border:0.5px solid var(--border); border-radius:12px; padding:12px; }
+  .filters input, .filters select { flex:1; min-width:120px; }
+  .filters .price-range { display:flex; gap:6px; flex:1; min-width:180px; }
+  .filters .price-range input { width:0; flex:1; }
+  .filters .clear-filters { flex:0 0 auto; background:transparent; border:0.5px solid var(--border-strong); }
+
   .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:18px; }
 
   .card { background:var(--surface-2); border:0.5px solid var(--border); border-radius:var(--radius); overflow:hidden; display:flex; flex-direction:column; }
   .card-photo { aspect-ratio:4/3; background:var(--surface-1); position:relative; overflow:hidden; cursor:zoom-in; }
   .card-photo img { width:100%; height:100%; object-fit:cover; display:block; }
   .card-photo .badge { position:absolute; top:8px; left:8px; font-size:11px; font-weight:700; padding:3px 10px; border-radius:20px; text-transform:uppercase; letter-spacing:.03em; }
-  .card-photo .zoom-hint { position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,.55); color:#fff; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; }
-  .reserved-time { font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:4px; margin-top:-2px; }
-
-  .lightbox-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; align-items:center; justify-content:center; z-index:70; padding:20px; }
-  .lightbox-overlay.show { display:flex; }
-  .lightbox-overlay img { max-width:100%; max-height:85vh; border-radius:8px; object-fit:contain; }
-  .lightbox-close { position:absolute; top:18px; right:22px; background:none; border:none; color:#fff; font-size:32px; line-height:1; cursor:pointer; }
-  .lightbox-caption { position:absolute; bottom:24px; left:0; right:0; text-align:center; color:#fff; font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:600; }
   .badge-available { background:#16a34a; color:#fff; }
   .badge-reserved { background:#f59e0b; color:#1a1a1a; }
   .badge-sold { background:#6b7280; color:#fff; }
+  .card-photo .zoom-hint { position:absolute; bottom:8px; right:8px; background:rgba(0,0,0,.55); color:#fff; width:26px; height:26px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; }
+  .reserved-time { font-size:11px; color:var(--text-muted); display:flex; align-items:center; gap:4px; margin-top:-2px; }
+  .expiry-note { font-size:11px; color:#b45309; display:flex; align-items:center; gap:4px; }
 
   .card-body { padding:12px 14px 14px; display:flex; flex-direction:column; gap:6px; flex:1; }
   .card-brand { font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.04em; font-weight:600; }
   .card-name { font-family:'Rajdhani',sans-serif; font-size:16px; font-weight:700; line-height:1.2; }
   .card-price { font-family:'Teko',sans-serif; font-size:26px; font-weight:600; color:var(--accent-dark); margin-top:2px; }
-  .card-meta { font-size:11px; color:var(--text-muted); }
+  .offer-tag { font-size:11px; font-weight:700; color:#7c3aed; background:#ede9fe; padding:2px 8px; border-radius:10px; display:inline-block; width:fit-content; }
 
   button { font-family:var(--font-sans); cursor:pointer; }
   .buy-btn { margin-top:auto; height:38px; border-radius:8px; border:none; background:var(--accent); color:#fff; font-weight:700; font-size:13px; text-transform:uppercase; letter-spacing:.02em; }
   .buy-btn:hover { background:var(--accent-dark); }
   .buy-btn:disabled { background:var(--border-strong); color:var(--text-muted); cursor:not-allowed; }
   .buy-btn.mine { background:#16a34a; }
+  .offer-row { display:flex; gap:6px; margin-top:4px; }
+  .offer-row input { flex:1; height:34px; }
+  .offer-row button { height:34px; padding:0 10px; background:#7c3aed; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; }
 
   .empty { text-align:center; padding:4rem 1rem; color:var(--text-secondary); }
 
-  /* modal */
   .overlay { position:fixed; inset:0; background:rgba(0,0,0,.5); display:none; align-items:center; justify-content:center; z-index:50; padding:20px; }
   .overlay.show { display:flex; }
-  .modal { background:var(--surface-2); border-radius:14px; padding:22px; width:100%; max-width:420px; max-height:85vh; overflow-y:auto; }
+  .modal { background:var(--surface-2); border-radius:14px; padding:22px; width:100%; max-width:420px; max-height:85vh; overflow-y:auto; position:relative; }
   .modal h2 { font-family:'Teko',sans-serif; font-size:26px; margin:0 0 12px; text-transform:uppercase; }
   .modal .field { margin-bottom:12px; }
   .modal label { display:block; font-size:13px; color:var(--text-secondary); margin-bottom:4px; }
-  .modal input { width:100%; height:38px; padding:0 10px; border:0.5px solid var(--border); border-radius:8px; font-size:14px; }
+  .modal input { width:100%; }
   .modal-actions { display:flex; gap:8px; margin-top:16px; }
   .modal-actions button { flex:1; height:40px; border-radius:8px; border:0.5px solid var(--border-strong); background:transparent; font-weight:600; }
   .modal-actions .primary { background:var(--accent); color:#fff; border:none; }
@@ -76,6 +83,12 @@
   .cart-item-info .price { font-size:13px; color:var(--text-secondary); }
   .cart-total { display:flex; justify-content:space-between; font-family:'Teko',sans-serif; font-size:24px; font-weight:600; margin-top:14px; padding-top:14px; border-top:2px solid var(--border); }
   .whatsapp-btn { margin-top:14px; width:100%; height:44px; border-radius:8px; border:none; background:#25d366; color:#fff; font-weight:700; font-size:14px; display:flex; align-items:center; justify-content:center; gap:8px; }
+
+  .lightbox-overlay { position:fixed; inset:0; background:rgba(0,0,0,.88); display:none; align-items:center; justify-content:center; z-index:70; padding:20px; }
+  .lightbox-overlay.show { display:flex; }
+  .lightbox-overlay img { max-width:100%; max-height:85vh; border-radius:8px; object-fit:contain; }
+  .lightbox-close { position:absolute; top:18px; right:22px; background:none; border:none; color:#fff; font-size:32px; line-height:1; cursor:pointer; }
+  .lightbox-caption { position:absolute; bottom:24px; left:0; right:0; text-align:center; color:#fff; font-family:'Rajdhani',sans-serif; font-size:15px; font-weight:600; }
 
   .toast { position:fixed; bottom:20px; left:50%; transform:translateX(-50%); background:#1a1a1a; color:#fff; padding:12px 20px; border-radius:8px; font-size:13px; z-index:60; opacity:0; pointer-events:none; transition:opacity .2s; max-width:90vw; text-align:center; }
   .toast.show { opacity:1; }
@@ -91,19 +104,29 @@
 </div>
 
 <div class="page">
+  <div class="filters">
+    <input id="searchInput" placeholder="Buscar por nombre...">
+    <select id="brandFilter"><option value="">Todas las marcas</option></select>
+    <div class="price-range">
+      <input id="minPrice" type="number" placeholder="Precio mín.">
+      <input id="maxPrice" type="number" placeholder="Precio máx.">
+    </div>
+    <button class="clear-filters" id="clearFilters">Limpiar filtros</button>
+  </div>
+
   <div id="loadingMsg" class="status">Cargando catálogo...</div>
   <div class="grid" id="grid" style="display:none;"></div>
-  <div class="empty" id="emptyMsg" style="display:none;">Todavía no hay carritos publicados. Vuelve pronto.</div>
+  <div class="empty" id="emptyMsg" style="display:none;">No hay carritos que coincidan con tu búsqueda.</div>
 </div>
 
-<!-- Buyer info modal (first time reserving) -->
+<!-- Buyer info modal -->
 <div class="overlay" id="buyerOverlay">
-  <div class="modal" style="position:relative;">
+  <div class="modal">
     <button class="close-x" id="closeBuyerModal">&times;</button>
     <h2>Tus datos de contacto</h2>
     <p style="font-size:13px; color:var(--text-secondary); margin-top:-6px;">Los necesitamos para confirmar tu reserva y coordinar el pago.</p>
-    <div class="field"><label>Nombre</label><input id="buyerNameInput" placeholder="Tu nombre"></div>
-    <div class="field"><label>WhatsApp</label><input id="buyerPhoneInput" placeholder="Ej: 3001234567"></div>
+    <div class="field"><label>Nombre</label><input id="buyerNameInput" style="width:100%;" placeholder="Tu nombre"></div>
+    <div class="field"><label>WhatsApp</label><input id="buyerPhoneInput" style="width:100%;" placeholder="Ej: 3001234567"></div>
     <div class="modal-actions">
       <button class="primary" id="saveBuyerBtn" style="width:100%;">Continuar</button>
     </div>
@@ -112,7 +135,7 @@
 
 <!-- Cart modal -->
 <div class="overlay" id="cartOverlay">
-  <div class="modal" style="position:relative;">
+  <div class="modal">
     <button class="close-x" id="closeCartModal">&times;</button>
     <h2>Mi canasta</h2>
     <div id="cartItems"></div>
@@ -135,7 +158,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
   import {
     getFirestore, collection, doc, onSnapshot, runTransaction,
-    serverTimestamp, query, orderBy
+    serverTimestamp, query, orderBy, updateDoc
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -150,12 +173,12 @@
   const app = initializeApp(firebaseConfig);
   const db = getFirestore(app);
 
-  // ---------- WhatsApp / seller contact number (shown in the checkout message) ----------
   const SELLER_WHATSAPP = "573045299111";
+  const RESERVE_HOURS = 72;
 
   const el = id => document.getElementById(id);
 
-  // ---------- Buyer identity (stored locally, reused across visits) ----------
+  // ---------- Buyer identity ----------
   function getBuyerId(){
     let id = localStorage.getItem('dm_buyerId');
     if(!id){
@@ -183,17 +206,29 @@
     t.textContent = msg;
     t.classList.add('show');
     clearTimeout(toastTimer);
-    toastTimer = setTimeout(()=> t.classList.remove('show'), 3200);
+    toastTimer = setTimeout(()=> t.classList.remove('show'), 3600);
   }
 
-  function formatCOP(n){
-    return '$' + Number(n||0).toLocaleString('es-CO');
-  }
-
+  function formatCOP(n){ return '$' + Number(n||0).toLocaleString('es-CO'); }
   function formatTimestamp(ts){
     if(!ts) return '';
     const d = ts.toDate ? ts.toDate() : new Date(ts);
     return d.toLocaleString('es-CO', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false });
+  }
+  function hoursRemaining(reservedAt){
+    if(!reservedAt) return null;
+    const reservedMs = (reservedAt.toDate ? reservedAt.toDate() : new Date(reservedAt)).getTime();
+    const deadline = reservedMs + RESERVE_HOURS*3600*1000;
+    const diffMs = deadline - Date.now();
+    if(diffMs <= 0) return 0;
+    return diffMs / 3600000;
+  }
+  function formatHoursRemaining(h){
+    if(h === null) return '';
+    if(h <= 0) return 'Por liberar...';
+    const hrs = Math.floor(h);
+    const mins = Math.round((h - hrs) * 60);
+    return `Se libera en ${hrs}h ${mins}m si no se confirma`;
   }
 
   // ---------- Live catalog ----------
@@ -202,17 +237,79 @@
   onSnapshot(q, (snap)=>{
     products = [];
     snap.forEach(d=> products.push({ id: d.id, ...d.data() }));
-    renderGrid();
+    populateBrandFilter();
+    releaseExpiredReservations();
+    applyFiltersAndRender();
     renderCart();
   }, (err)=>{
     el('loadingMsg').textContent = 'No se pudo cargar el catálogo. Intenta más tarde.';
     console.error(err);
   });
 
-  function renderGrid(){
+  // Re-render periodically so the "se libera en Xh Ym" countdown stays fresh
+  setInterval(()=>{ applyFiltersAndRender(); }, 60000);
+
+  // ---------- Auto-release expired reservations (72h) ----------
+  const releaseAttempted = new Set();
+  async function releaseExpiredReservations(){
+    for(const p of products){
+      if(p.status === 'reserved' && p.reservedAt && !releaseAttempted.has(p.id)){
+        const h = hoursRemaining(p.reservedAt);
+        if(h !== null && h <= 0){
+          releaseAttempted.add(p.id);
+          try {
+            await updateDoc(doc(db, 'products', p.id), {
+              status: 'available',
+              buyerId: null,
+              reservedBy: null,
+              reservedAt: null,
+              agreedPrice: null,
+              offerAmount: null
+            });
+          } catch(e){ /* another visitor may have already released it, or rule mismatch — ignore */ }
+        }
+      }
+    }
+  }
+
+  // ---------- Filters ----------
+  function populateBrandFilter(){
+    const select = el('brandFilter');
+    const current = select.value;
+    const brands = [...new Set(products.map(p=> p.brand).filter(Boolean))].sort();
+    select.innerHTML = '<option value="">Todas las marcas</option>' + brands.map(b=> `<option value="${b}">${b}</option>`).join('');
+    if(brands.includes(current)) select.value = current;
+  }
+
+  ['searchInput','brandFilter','minPrice','maxPrice'].forEach(id=>{
+    el(id).addEventListener('input', applyFiltersAndRender);
+  });
+  el('clearFilters').addEventListener('click', ()=>{
+    el('searchInput').value = ''; el('brandFilter').value = ''; el('minPrice').value = ''; el('maxPrice').value = '';
+    applyFiltersAndRender();
+  });
+
+  function applyFiltersAndRender(){
+    const term = el('searchInput').value.trim().toLowerCase();
+    const brand = el('brandFilter').value;
+    const min = parseFloat(el('minPrice').value);
+    const max = parseFloat(el('maxPrice').value);
+
+    const filtered = products.filter(p=>{
+      if(term && !((p.name||'').toLowerCase().includes(term) || (p.brand||'').toLowerCase().includes(term))) return false;
+      if(brand && p.brand !== brand) return false;
+      if(!isNaN(min) && Number(p.price||0) < min) return false;
+      if(!isNaN(max) && Number(p.price||0) > max) return false;
+      return true;
+    });
+    renderGrid(filtered);
+  }
+
+  // ---------- Render grid ----------
+  function renderGrid(list){
     el('loadingMsg').style.display = 'none';
     const grid = el('grid');
-    if(!products.length){
+    if(!list.length){
       grid.style.display = 'none';
       el('emptyMsg').style.display = 'block';
       return;
@@ -220,26 +317,35 @@
     el('emptyMsg').style.display = 'none';
     grid.style.display = 'grid';
     grid.innerHTML = '';
-    products.forEach(p=>{
+    list.forEach(p=>{
       const isMine = p.buyerId === buyerId;
       const card = document.createElement('div');
       card.className = 'card';
 
-      let badgeHtml = '';
-      let btnHtml = '';
-      let timeHtml = '';
+      let badgeHtml = '', btnBlockHtml = '', timeHtml = '';
       if(p.status === 'available'){
         badgeHtml = '<span class="badge badge-available">Disponible</span>';
-        btnHtml = '<button class="buy-btn" data-id="'+p.id+'">Reservar</button>';
+        btnBlockHtml = '<button class="buy-btn" data-id="'+p.id+'">Reservar</button>';
+        if(p.allowOffers){
+          btnBlockHtml += `
+            <div class="offer-row">
+              <input type="number" placeholder="Tu oferta ($)" data-offer-input="${p.id}">
+              <button data-offer-btn="${p.id}">Ofertar</button>
+            </div>`;
+        }
       } else if(p.status === 'reserved'){
         badgeHtml = '<span class="badge badge-reserved">'+(isMine?'Reservado por ti':'Reservado')+'</span>';
-        btnHtml = '<button class="buy-btn'+(isMine?' mine':'')+'" disabled>'+(isMine?'✓ Es tuyo':'Ya reservado')+'</button>';
-        if(p.reservedAt) timeHtml = '<div class="reserved-time"><i class="ti ti-clock"></i> Reservado a las '+formatTimestamp(p.reservedAt)+'</div>';
+        btnBlockHtml = '<button class="buy-btn'+(isMine?' mine':'')+'" disabled>'+(isMine?'✓ Es tuyo':'Ya reservado')+'</button>';
+        if(p.reservedAt) timeHtml += '<div class="reserved-time"><i class="ti ti-clock"></i> Reservado a las '+formatTimestamp(p.reservedAt)+'</div>';
+        const h = hoursRemaining(p.reservedAt);
+        if(h !== null) timeHtml += '<div class="expiry-note"><i class="ti ti-hourglass-low"></i> '+formatHoursRemaining(h)+'</div>';
       } else {
         badgeHtml = '<span class="badge badge-sold">Vendido</span>';
-        btnHtml = '<button class="buy-btn" disabled>Vendido</button>';
+        btnBlockHtml = '<button class="buy-btn" disabled>Vendido</button>';
         if(p.reservedAt) timeHtml = '<div class="reserved-time"><i class="ti ti-clock"></i> Reservado a las '+formatTimestamp(p.reservedAt)+'</div>';
       }
+
+      const offerTagHtml = p.status === 'available' && p.allowOffers ? '<span class="offer-tag">Acepta ofertas</span>' : '';
 
       card.innerHTML = `
         <div class="card-photo">
@@ -250,13 +356,23 @@
         <div class="card-body">
           <div class="card-brand">${p.brand||''}</div>
           <div class="card-name">${p.name||'Sin nombre'}</div>
+          ${offerTagHtml}
           ${timeHtml}
           <div class="card-price">${formatCOP(p.price)}</div>
-          ${btnHtml}
+          ${btnBlockHtml}
         </div>
       `;
       const buyBtn = card.querySelector('.buy-btn[data-id]');
       if(buyBtn) buyBtn.addEventListener('click', ()=> attemptReserve(p.id));
+      const offerBtn = card.querySelector('[data-offer-btn]');
+      if(offerBtn){
+        offerBtn.addEventListener('click', ()=>{
+          const input = card.querySelector('[data-offer-input]');
+          const amount = parseFloat(input.value);
+          if(!amount || amount <= 0){ showToast('Escribe un monto válido para tu oferta.'); return; }
+          attemptOffer(p.id, amount);
+        });
+      }
       if(p.image){
         const photoEl = card.querySelector('.card-photo');
         photoEl.addEventListener('click', ()=> openLightbox(p.image, (p.brand?p.brand+' · ':'')+p.name));
@@ -276,25 +392,34 @@
     el('lightboxImg').src = '';
   }
   el('lightboxClose').addEventListener('click', closeLightbox);
-  el('lightboxOverlay').addEventListener('click', (e)=>{
-    if(e.target.id === 'lightboxOverlay') closeLightbox();
-  });
-  document.addEventListener('keydown', (e)=>{
-    if(e.key === 'Escape') closeLightbox();
-  });
+  el('lightboxOverlay').addEventListener('click', (e)=>{ if(e.target.id === 'lightboxOverlay') closeLightbox(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') closeLightbox(); });
 
   // ---------- Reservation flow ----------
-  let pendingProductId = null;
+  let pendingAction = null; // { type: 'reserve'|'offer', productId, amount }
 
   function attemptReserve(productId){
     if(!hasBuyerInfo()){
-      pendingProductId = productId;
-      el('buyerNameInput').value = getBuyerInfo().name;
-      el('buyerPhoneInput').value = getBuyerInfo().phone;
-      el('buyerOverlay').classList.add('show');
+      pendingAction = { type:'reserve', productId };
+      openBuyerModal();
       return;
     }
     doReserve(productId);
+  }
+
+  function attemptOffer(productId, amount){
+    if(!hasBuyerInfo()){
+      pendingAction = { type:'offer', productId, amount };
+      openBuyerModal();
+      return;
+    }
+    doOffer(productId, amount);
+  }
+
+  function openBuyerModal(){
+    el('buyerNameInput').value = getBuyerInfo().name;
+    el('buyerPhoneInput').value = getBuyerInfo().phone;
+    el('buyerOverlay').classList.add('show');
   }
 
   async function doReserve(productId){
@@ -310,7 +435,9 @@
           status: 'reserved',
           buyerId: buyerId,
           reservedBy: name + ' - ' + phone,
-          reservedAt: serverTimestamp()
+          reservedAt: serverTimestamp(),
+          agreedPrice: data.price,
+          offerAmount: null
         });
       });
       showToast('¡Listo! Quedó reservado para ti.');
@@ -324,24 +451,54 @@
     }
   }
 
+  async function doOffer(productId, amount){
+    const productRef = doc(db, 'products', productId);
+    const { name, phone } = getBuyerInfo();
+    try {
+      await runTransaction(db, async (tx)=>{
+        const snap = await tx.get(productRef);
+        if(!snap.exists()) throw new Error('not-found');
+        const data = snap.data();
+        if(data.status !== 'available') throw new Error('taken');
+        if(!data.allowOffers) throw new Error('no-offers');
+        tx.update(productRef, {
+          status: 'reserved',
+          buyerId: buyerId,
+          reservedBy: name + ' - ' + phone,
+          reservedAt: serverTimestamp(),
+          agreedPrice: amount,
+          offerAmount: amount
+        });
+      });
+      showToast('¡Oferta aceptada! Quedó reservado para ti a '+formatCOP(amount)+'.');
+    } catch(e){
+      if(e.message === 'taken'){
+        showToast('Justo se acaban de adelantar con este carrito.');
+      } else if(e.code === 'permission-denied' || e.message === 'no-offers'){
+        showToast('Tu oferta no fue aceptada. Intenta con un monto un poco más alto.');
+      } else {
+        showToast('No se pudo enviar la oferta. Intenta de nuevo.');
+        console.error(e);
+      }
+    }
+  }
+
   el('closeBuyerModal').addEventListener('click', ()=>{
     el('buyerOverlay').classList.remove('show');
-    pendingProductId = null;
+    pendingAction = null;
   });
 
   el('saveBuyerBtn').addEventListener('click', ()=>{
     const name = el('buyerNameInput').value.trim();
     const phone = el('buyerPhoneInput').value.trim();
-    if(!name || !phone){
-      showToast('Completa tu nombre y WhatsApp para continuar.');
-      return;
-    }
+    if(!name || !phone){ showToast('Completa tu nombre y WhatsApp para continuar.'); return; }
     localStorage.setItem('dm_buyerName', name);
     localStorage.setItem('dm_buyerPhone', phone);
     el('buyerOverlay').classList.remove('show');
-    if(pendingProductId){
-      doReserve(pendingProductId);
-      pendingProductId = null;
+    if(pendingAction){
+      if(pendingAction.type === 'reserve') doReserve(pendingAction.productId);
+      else if(pendingAction.type === 'offer') doOffer(pendingAction.productId, pendingAction.amount);
+      pendingAction = null;
     }
   });
 
@@ -366,14 +523,15 @@
     el('whatsappBtn').style.display = 'flex';
     let total = 0;
     items.forEach(p=>{
-      total += Number(p.price||0);
+      const itemPrice = p.agreedPrice != null ? p.agreedPrice : p.price;
+      total += Number(itemPrice||0);
       const row = document.createElement('div');
       row.className = 'cart-item';
       row.innerHTML = `
         ${p.image ? `<img src="${p.image}">` : ''}
         <div class="cart-item-info">
           <div class="name">${p.name}</div>
-          <div class="price">${formatCOP(p.price)} · ${p.status==='sold' ? 'Vendido' : 'Reservado'}</div>
+          <div class="price">${formatCOP(itemPrice)}${p.offerAmount ? ' (oferta aceptada)' : ''} · ${p.status==='sold' ? 'Vendido' : 'Reservado'}</div>
         </div>
       `;
       container.appendChild(row);
@@ -382,7 +540,7 @@
 
     el('whatsappBtn').onclick = ()=>{
       const { name } = getBuyerInfo();
-      const lines = items.map(p=> `• ${p.name} — ${formatCOP(p.price)}`).join('%0A');
+      const lines = items.map(p=> `• ${p.name} — ${formatCOP(p.agreedPrice != null ? p.agreedPrice : p.price)}`).join('%0A');
       const msg = `Hola! Soy ${name}, quiero confirmar mi pedido de DieCast Market:%0A%0A${lines}%0A%0A*Total: ${formatCOP(total)}*`;
       window.open(`https://wa.me/${SELLER_WHATSAPP}?text=${msg}`, '_blank');
     };
