@@ -24,7 +24,10 @@
   button:hover { background:var(--surface-1); }
   button.primary { background:var(--accent); color:#fff; border:none; }
   button.primary:hover { background:var(--accent-dark); }
+  button.secondary { background:#1a1a1a; color:#fff; border:none; }
   button.danger { color:#b91c1c; border-color:#fca5a5; }
+  label.checkbox { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--text-secondary); height:36px; }
+  label.checkbox input { width:auto; height:auto; }
 
   .login-wrap { min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; }
   .login-box { background:var(--surface-2); border:0.5px solid var(--border); border-radius:14px; padding:28px; width:100%; max-width:360px; }
@@ -37,19 +40,32 @@
   .topbar { background:var(--surface-2); border-bottom:0.5px solid var(--border); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
   .topbar h1 { font-family:'Teko',sans-serif; font-size:26px; margin:0; text-transform:uppercase; }
 
-  .page { max-width:1000px; margin:0 auto; padding:24px 20px 80px; }
+  .tabs { display:flex; gap:8px; padding:14px 20px 0; max-width:1000px; margin:0 auto; }
+  .tab-btn { border-radius:8px 8px 0 0; border:0.5px solid var(--border); border-bottom:none; background:var(--surface-1); }
+  .tab-btn.active { background:var(--surface-2); font-weight:700; }
+  .tab-panel { display:none; }
+  .tab-panel.active { display:block; }
+
+  .page { max-width:1000px; margin:0 auto; padding:20px 20px 80px; }
   .layout { display:grid; grid-template-columns:340px 1fr; gap:24px; align-items:start; }
   @media (max-width: 760px){ .layout{ grid-template-columns:1fr; } }
   .panel { background:var(--surface-2); border:0.5px solid var(--border); border-radius:12px; padding:1rem 1.25rem; }
   .field { margin-bottom:12px; }
   .field label { display:block; font-size:13px; color:var(--text-secondary); margin-bottom:4px; }
+  .row2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
   .imgdrop { border:1px dashed var(--border-strong); border-radius:8px; padding:14px; text-align:center; cursor:pointer; font-size:13px; color:var(--text-secondary); }
   .imgdrop:hover { background:var(--surface-1); }
 
+  .staged-list { display:flex; flex-direction:column; gap:6px; margin:12px 0; }
+  .staged-item { display:flex; align-items:center; gap:8px; background:var(--surface-1); border-radius:8px; padding:6px 8px; font-size:13px; }
+  .staged-item img { width:32px; height:32px; object-fit:cover; border-radius:6px; }
+  .staged-item .n { flex:1; }
+  .staged-item button { height:24px; padding:0 8px; font-size:11px; }
+
   .plist { display:flex; flex-direction:column; gap:10px; }
-  .prow { background:var(--surface-2); border:0.5px solid var(--border); border-radius:10px; padding:10px; display:flex; gap:12px; align-items:center; }
+  .prow { background:var(--surface-2); border:0.5px solid var(--border); border-radius:10px; padding:10px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
   .prow img { width:56px; height:56px; object-fit:cover; border-radius:8px; flex-shrink:0; background:var(--surface-1); }
-  .prow-info { flex:1; min-width:0; }
+  .prow-info { flex:1; min-width:160px; }
   .prow-name { font-weight:700; font-size:14px; }
   .prow-meta { font-size:12px; color:var(--text-secondary); }
   .prow-status { font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px; text-transform:uppercase; display:inline-block; margin-top:2px; }
@@ -59,6 +75,12 @@
   .prow-buyer { font-size:11px; color:var(--text-muted); margin-top:2px; }
   .prow-actions { display:flex; flex-direction:column; gap:4px; }
   .prow-actions button { height:28px; padding:0 10px; font-size:12px; }
+  .offer-badge { font-size:10px; font-weight:700; color:#7c3aed; background:#ede9fe; padding:1px 8px; border-radius:8px; display:inline-block; margin-top:2px; }
+
+  .summary-cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(160px,1fr)); gap:12px; margin-bottom:20px; }
+  .summary-card { background:var(--surface-2); border:0.5px solid var(--border); border-radius:10px; padding:14px; }
+  .summary-card .label { font-size:12px; color:var(--text-secondary); }
+  .summary-card .value { font-family:'Teko',sans-serif; font-size:30px; font-weight:600; }
 
   .status { text-align:center; padding:2rem; color:var(--text-secondary); }
 </style>
@@ -84,30 +106,72 @@
     <button id="logoutBtn"><i class="ti ti-logout"></i> Salir</button>
   </div>
 
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="catalog">Catálogo</button>
+    <button class="tab-btn" data-tab="sales">Historial de ventas</button>
+  </div>
+
   <div class="page">
-    <div class="layout">
 
-      <div class="panel">
-        <h3 style="margin-top:0;">Agregar carrito</h3>
-        <div class="field">
-          <label>Foto</label>
-          <div class="imgdrop" id="imgDrop"><i class="ti ti-photo-plus" style="font-size:20px"></i><div id="imgDropLabel">Subir imagen</div></div>
-          <input type="file" id="imgInput" accept="image/*" style="display:none">
+    <!-- CATALOG TAB -->
+    <div class="tab-panel active" id="tab-catalog">
+      <div class="layout">
+
+        <div class="panel">
+          <h3 style="margin-top:0;" id="formTitle">Agregar carrito</h3>
+
+          <div class="field">
+            <label>Foto</label>
+            <div class="imgdrop" id="imgDrop"><i class="ti ti-photo-plus" style="font-size:20px"></i><div id="imgDropLabel">Subir imagen</div></div>
+            <input type="file" id="imgInput" accept="image/*" style="display:none">
+          </div>
+          <div class="field"><label>Marca</label><input id="pBrand" placeholder="Hot Wheels"></div>
+          <div class="field"><label>Nombre del modelo</label><input id="pName" placeholder="'73 Jeep J10"></div>
+          <div class="field"><label>Precio (COP)</label><input id="pPrice" type="number" placeholder="35000"></div>
+
+          <div class="field">
+            <label class="checkbox"><input type="checkbox" id="pAllowOffers"> Acepta ofertas</label>
+          </div>
+          <div class="field" id="minOfferField" style="display:none;">
+            <label>Oferta mínima aceptable (oculta para el comprador)</label>
+            <input id="pMinOffer" type="number" placeholder="20000">
+          </div>
+
+          <div id="editModeActions" style="display:none; gap:8px; margin-bottom:10px;" class="row2">
+            <button id="saveEditBtn" class="primary">Guardar cambios</button>
+            <button id="cancelEditBtn">Cancelar</button>
+          </div>
+
+          <div id="addModeActions">
+            <div class="row2" style="margin-bottom:10px;">
+              <button id="stageBtn">+ Agregar a la lista</button>
+              <button id="publishBtn" class="secondary">Publicar todo</button>
+            </div>
+            <div class="staged-list" id="stagedList"></div>
+          </div>
+
+          <div class="login-error" id="formStatus"></div>
         </div>
-        <div class="field"><label>Marca</label><input id="pBrand" placeholder="Hot Wheels"></div>
-        <div class="field"><label>Nombre del modelo</label><input id="pName" placeholder="'73 Jeep J10"></div>
-        <div class="field"><label>Precio (COP)</label><input id="pPrice" type="number" placeholder="35000"></div>
-        <button class="primary" id="addBtn" style="width:100%;">Publicar</button>
-        <div class="login-error" id="addStatus"></div>
-      </div>
 
-      <div>
-        <h3 style="margin-top:0;">Catálogo (<span id="countLabel">0</span>)</h3>
-        <div id="loadingMsg" class="status">Cargando...</div>
-        <div class="plist" id="plist"></div>
-      </div>
+        <div>
+          <h3 style="margin-top:0;">Catálogo (<span id="countLabel">0</span>)</h3>
+          <div id="loadingMsg" class="status">Cargando...</div>
+          <div class="plist" id="plist"></div>
+        </div>
 
+      </div>
     </div>
+
+    <!-- SALES TAB -->
+    <div class="tab-panel" id="tab-sales">
+      <div class="summary-cards">
+        <div class="summary-card"><div class="label">Piezas vendidas</div><div class="value" id="salesCount">0</div></div>
+        <div class="summary-card"><div class="label">Total recaudado</div><div class="value" id="salesTotal">$0</div></div>
+      </div>
+      <div class="plist" id="salesList"></div>
+      <div class="empty" id="salesEmptyMsg" style="display:none; text-align:center; padding:2rem; color:var(--text-secondary);">Todavía no has confirmado ninguna venta.</div>
+    </div>
+
   </div>
 </div>
 
@@ -117,8 +181,8 @@
     getAuth, signInWithEmailAndPassword, onAuthStateChanged, signOut
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
   import {
-    getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
-    onSnapshot, query, orderBy, serverTimestamp
+    getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, setDoc,
+    onSnapshot, query, orderBy, serverTimestamp, writeBatch
   } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
   const firebaseConfig = {
@@ -141,13 +205,9 @@
     const email = el('loginEmail').value.trim();
     const pass = el('loginPassword').value;
     el('loginError').textContent = '';
-    try {
-      await signInWithEmailAndPassword(auth, email, pass);
-    } catch(e){
-      el('loginError').textContent = 'Correo o contraseña incorrectos.';
-    }
+    try { await signInWithEmailAndPassword(auth, email, pass); }
+    catch(e){ el('loginError').textContent = 'Correo o contraseña incorrectos.'; }
   });
-
   el('logoutBtn').addEventListener('click', ()=> signOut(auth));
 
   onAuthStateChanged(auth, (user)=>{
@@ -161,7 +221,22 @@
     }
   });
 
-  // ---------- Image upload (compressed to base64) ----------
+  // ---------- Tabs ----------
+  document.querySelectorAll('.tab-btn').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.tab-btn').forEach(b=> b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p=> p.classList.remove('active'));
+      btn.classList.add('active');
+      el('tab-'+btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ---------- Offers checkbox toggle ----------
+  el('pAllowOffers').addEventListener('change', ()=>{
+    el('minOfferField').style.display = el('pAllowOffers').checked ? 'block' : 'none';
+  });
+
+  // ---------- Image upload ----------
   let currentImage = null;
   el('imgDrop').addEventListener('click', ()=> el('imgInput').click());
   el('imgInput').addEventListener('change', (e)=>{
@@ -186,42 +261,163 @@
     reader.readAsDataURL(file);
   });
 
-  // ---------- Add product ----------
-  el('addBtn').addEventListener('click', async ()=>{
+  function readForm(){
     const brand = el('pBrand').value.trim();
     const name = el('pName').value.trim();
     const price = parseInt(el('pPrice').value, 10);
-    const statusEl = el('addStatus');
-    statusEl.style.color = '#b91c1c';
+    const allowOffers = el('pAllowOffers').checked;
+    const minOffer = allowOffers ? parseInt(el('pMinOffer').value, 10) : null;
+    return { brand, name, price, allowOffers, minOffer, image: currentImage };
+  }
 
-    if(!name || !price){
-      statusEl.textContent = 'Ponle al menos el nombre y el precio.';
-      return;
-    }
-    try {
-      await addDoc(collection(db, 'products'), {
-        brand: brand || '',
-        name,
-        price,
-        image: currentImage || '',
-        status: 'available',
-        buyerId: null,
-        reservedBy: null,
-        reservedAt: null,
-        createdAt: serverTimestamp()
+  function clearForm(){
+    el('pBrand').value = ''; el('pName').value = ''; el('pPrice').value = '';
+    el('pAllowOffers').checked = false; el('pMinOffer').value = '';
+    el('minOfferField').style.display = 'none';
+    currentImage = null;
+    el('imgDropLabel').textContent = 'Subir imagen';
+  }
+
+  function setStatus(msg, ok){
+    const s = el('formStatus');
+    s.style.color = ok ? '#166534' : '#b91c1c';
+    s.textContent = msg;
+    if(ok) setTimeout(()=> s.textContent='', 2500);
+  }
+
+  // ---------- Staging (bulk publish) ----------
+  let stagedProducts = [];
+
+  function renderStagedList(){
+    const wrap = el('stagedList');
+    wrap.innerHTML = '';
+    stagedProducts.forEach((p, idx)=>{
+      const row = document.createElement('div');
+      row.className = 'staged-item';
+      row.innerHTML = `
+        ${p.image ? `<img src="${p.image}">` : `<div style="width:32px;height:32px;background:var(--surface-1);border-radius:6px;"></div>`}
+        <div class="n">${p.name} — $${(p.price||0).toLocaleString('es-CO')}</div>
+        <button data-remove="${idx}">Quitar</button>
+      `;
+      row.querySelector('[data-remove]').addEventListener('click', ()=>{
+        stagedProducts.splice(idx,1);
+        renderStagedList();
       });
-      el('pBrand').value = ''; el('pName').value = ''; el('pPrice').value = '';
-      currentImage = null;
-      el('imgDropLabel').textContent = 'Subir imagen';
-      statusEl.style.color = '#166534';
-      statusEl.textContent = 'Publicado.';
-      setTimeout(()=> statusEl.textContent = '', 2000);
+      wrap.appendChild(row);
+    });
+  }
+
+  el('stageBtn').addEventListener('click', ()=>{
+    const data = readForm();
+    if(!data.name || !data.price){ setStatus('Ponle al menos el nombre y el precio.', false); return; }
+    if(data.allowOffers && !data.minOffer){ setStatus('Si acepta ofertas, ponle una oferta mínima.', false); return; }
+    stagedProducts.push(data);
+    renderStagedList();
+    clearForm();
+    setStatus('Agregado a la lista. Sigue agregando o dale "Publicar todo".', true);
+  });
+
+  el('publishBtn').addEventListener('click', async ()=>{
+    // If there's something filled in the form but not staged yet, stage it too
+    const data = readForm();
+    if(data.name && data.price) stagedProducts.push(data);
+
+    if(!stagedProducts.length){ setStatus('No hay nada para publicar todavía.', false); return; }
+    if(stagedProducts.some(p=> p.allowOffers && !p.minOffer)){ setStatus('Alguna pieza acepta ofertas pero no tiene oferta mínima.', false); return; }
+
+    try {
+      const batch = writeBatch(db);
+      const productsCol = collection(db, 'products');
+      const refsWithOffers = [];
+      stagedProducts.forEach(p=>{
+        const ref = doc(productsCol);
+        batch.set(ref, {
+          brand: p.brand || '',
+          name: p.name,
+          price: p.price,
+          image: p.image || '',
+          allowOffers: !!p.allowOffers,
+          status: 'available',
+          buyerId: null,
+          reservedBy: null,
+          reservedAt: null,
+          agreedPrice: null,
+          offerAmount: null,
+          createdAt: serverTimestamp()
+        });
+        if(p.allowOffers) refsWithOffers.push({ id: ref.id, minOffer: p.minOffer });
+      });
+      await batch.commit();
+
+      // private floor docs (separate writes; each is auth-only and outside the batch's product writes)
+      for(const r of refsWithOffers){
+        await setDoc(doc(db, 'products', r.id, 'private', 'floor'), { minOffer: r.minOffer });
+      }
+
+      setStatus('¡Publicadas '+stagedProducts.length+' piezas!', true);
+      stagedProducts = [];
+      renderStagedList();
+      clearForm();
     } catch(e){
-      statusEl.textContent = 'Error al publicar: ' + e.message;
+      setStatus('Error al publicar: ' + e.message, false);
     }
   });
 
-  // ---------- Catalog list + management ----------
+  // ---------- Edit mode ----------
+  let editingId = null;
+
+  function enterEditMode(p){
+    editingId = p.id;
+    el('formTitle').textContent = 'Editar carrito';
+    el('pBrand').value = p.brand || '';
+    el('pName').value = p.name || '';
+    el('pPrice').value = p.price || '';
+    el('pAllowOffers').checked = !!p.allowOffers;
+    el('minOfferField').style.display = p.allowOffers ? 'block' : 'none';
+    el('pMinOffer').value = '';
+    if(p.allowOffers) el('pMinOffer').placeholder = '(déjalo vacío para no cambiarla)';
+    currentImage = p.image || null;
+    el('imgDropLabel').textContent = currentImage ? 'Imagen actual · click para cambiar' : 'Subir imagen';
+    el('editModeActions').style.display = 'grid';
+    el('addModeActions').style.display = 'none';
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function exitEditMode(){
+    editingId = null;
+    el('formTitle').textContent = 'Agregar carrito';
+    el('editModeActions').style.display = 'none';
+    el('addModeActions').style.display = 'block';
+    clearForm();
+  }
+
+  el('cancelEditBtn').addEventListener('click', exitEditMode);
+
+  el('saveEditBtn').addEventListener('click', async ()=>{
+    if(!editingId) return;
+    const data = readForm();
+    if(!data.name || !data.price){ setStatus('Ponle al menos el nombre y el precio.', false); return; }
+    try {
+      const updateData = {
+        brand: data.brand || '',
+        name: data.name,
+        price: data.price,
+        allowOffers: !!data.allowOffers
+      };
+      if(currentImage) updateData.image = currentImage;
+      await updateDoc(doc(db, 'products', editingId), updateData);
+
+      if(data.allowOffers && data.minOffer){
+        await setDoc(doc(db, 'products', editingId, 'private', 'floor'), { minOffer: data.minOffer });
+      }
+      setStatus('Cambios guardados.', true);
+      exitEditMode();
+    } catch(e){
+      setStatus('Error al guardar: ' + e.message, false);
+    }
+  });
+
+  // ---------- Catalog list ----------
   function formatCOP(n){ return '$' + Number(n||0).toLocaleString('es-CO'); }
   function formatTimestamp(ts){
     if(!ts) return '';
@@ -229,6 +425,7 @@
     return d.toLocaleString('es-CO', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' });
   }
 
+  let allProducts = [];
   let listenerStarted = false;
   function startCatalogListener(){
     if(listenerStarted) return;
@@ -236,10 +433,11 @@
     const q = query(collection(db, 'products'), orderBy('createdAt', 'desc'));
     onSnapshot(q, (snap)=>{
       el('loadingMsg').style.display = 'none';
-      const items = [];
-      snap.forEach(d=> items.push({ id: d.id, ...d.data() }));
-      el('countLabel').textContent = items.length;
-      renderList(items);
+      allProducts = [];
+      snap.forEach(d=> allProducts.push({ id: d.id, ...d.data() }));
+      el('countLabel').textContent = allProducts.length;
+      renderList(allProducts.filter(p=> p.status !== 'sold'));
+      renderSales(allProducts.filter(p=> p.status === 'sold'));
     });
   }
 
@@ -249,8 +447,8 @@
     items.forEach(p=>{
       const row = document.createElement('div');
       row.className = 'prow';
-      const statusClass = p.status === 'available' ? 'st-available' : (p.status === 'reserved' ? 'st-reserved' : 'st-sold');
-      const statusLabel = p.status === 'available' ? 'Disponible' : (p.status === 'reserved' ? 'Reservado' : 'Vendido');
+      const statusClass = p.status === 'available' ? 'st-available' : 'st-reserved';
+      const statusLabel = p.status === 'available' ? 'Disponible' : 'Reservado';
 
       row.innerHTML = `
         ${p.image ? `<img src="${p.image}">` : `<div style="width:56px;height:56px;border-radius:8px;background:var(--surface-1);flex-shrink:0;"></div>`}
@@ -258,29 +456,30 @@
           <div class="prow-name">${p.name}</div>
           <div class="prow-meta">${p.brand||''} · ${formatCOP(p.price)}</div>
           <div class="prow-status ${statusClass}">${statusLabel}</div>
-          ${p.reservedBy ? `<div class="prow-buyer">${p.reservedBy}${p.reservedAt ? ' · ' + formatTimestamp(p.reservedAt) : ''}</div>` : ''}
+          ${p.allowOffers ? '<span class="offer-badge">Acepta ofertas</span>' : ''}
+          ${p.reservedBy ? `<div class="prow-buyer">${p.reservedBy}${p.reservedAt ? ' · ' + formatTimestamp(p.reservedAt) : ''}${p.offerAmount ? ' · oferta: '+formatCOP(p.offerAmount) : ''}</div>` : ''}
         </div>
         <div class="prow-actions"></div>
       `;
 
       const actions = row.querySelector('.prow-actions');
 
+      if(p.status === 'available'){
+        const editBtn = document.createElement('button');
+        editBtn.textContent = 'Editar';
+        editBtn.addEventListener('click', ()=> enterEditMode(p));
+        actions.appendChild(editBtn);
+      }
+
       if(p.status === 'reserved'){
         const confirmBtn = document.createElement('button');
         confirmBtn.textContent = 'Confirmar venta';
-        confirmBtn.addEventListener('click', ()=> updateDoc(doc(db,'products',p.id), { status:'sold' }));
+        confirmBtn.addEventListener('click', ()=> updateDoc(doc(db,'products',p.id), { status:'sold', soldAt: serverTimestamp() }));
         actions.appendChild(confirmBtn);
 
         const releaseBtn = document.createElement('button');
         releaseBtn.textContent = 'Liberar';
-        releaseBtn.addEventListener('click', ()=> updateDoc(doc(db,'products',p.id), { status:'available', buyerId:null, reservedBy:null, reservedAt:null }));
-        actions.appendChild(releaseBtn);
-      }
-
-      if(p.status === 'sold'){
-        const releaseBtn = document.createElement('button');
-        releaseBtn.textContent = 'Reactivar';
-        releaseBtn.addEventListener('click', ()=> updateDoc(doc(db,'products',p.id), { status:'available', buyerId:null, reservedBy:null, reservedAt:null }));
+        releaseBtn.addEventListener('click', ()=> updateDoc(doc(db,'products',p.id), { status:'available', buyerId:null, reservedBy:null, reservedAt:null, agreedPrice:null, offerAmount:null }));
         actions.appendChild(releaseBtn);
       }
 
@@ -292,6 +491,35 @@
       });
       actions.appendChild(delBtn);
 
+      list.appendChild(row);
+    });
+  }
+
+  // ---------- Sales history ----------
+  function renderSales(items){
+    el('salesCount').textContent = items.length;
+    const total = items.reduce((sum,p)=> sum + Number((p.agreedPrice != null ? p.agreedPrice : p.price) || 0), 0);
+    el('salesTotal').textContent = formatCOP(total);
+
+    const list = el('salesList');
+    list.innerHTML = '';
+    el('salesEmptyMsg').style.display = items.length ? 'none' : 'block';
+
+    items.forEach(p=>{
+      const price = p.agreedPrice != null ? p.agreedPrice : p.price;
+      const row = document.createElement('div');
+      row.className = 'prow';
+      row.innerHTML = `
+        ${p.image ? `<img src="${p.image}">` : `<div style="width:56px;height:56px;border-radius:8px;background:var(--surface-1);flex-shrink:0;"></div>`}
+        <div class="prow-info">
+          <div class="prow-name">${p.name}</div>
+          <div class="prow-meta">${p.brand||''} · ${formatCOP(price)}${p.offerAmount ? ' (oferta aceptada)' : ''}</div>
+          <div class="prow-buyer">${p.reservedBy||''}${p.reservedAt ? ' · reservado ' + formatTimestamp(p.reservedAt) : ''}</div>
+        </div>
+        <div class="prow-actions">
+          <span class="prow-status st-sold">Vendido</span>
+        </div>
+      `;
       list.appendChild(row);
     });
   }
