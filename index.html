@@ -58,9 +58,12 @@
   .buy-btn:hover { background:var(--accent-dark); }
   .buy-btn:disabled { background:var(--border-strong); color:var(--text-muted); cursor:not-allowed; }
   .buy-btn.mine { background:#16a34a; }
-  .offer-row { display:flex; gap:6px; margin-top:4px; }
-  .offer-row input { flex:1; height:34px; }
-  .offer-row button { height:34px; padding:0 10px; background:#7c3aed; color:#fff; border:none; border-radius:8px; font-size:12px; font-weight:700; }
+  .offer-divider { display:flex; align-items:center; gap:8px; margin:6px 0 2px; font-size:11px; color:var(--text-muted); text-transform:uppercase; letter-spacing:.03em; }
+  .offer-divider::before, .offer-divider::after { content:''; flex:1; height:1px; background:var(--border); }
+  .offer-row { display:flex; flex-direction:column; gap:6px; }
+  .offer-row input { width:100%; height:36px; }
+  .offer-row button { width:100%; height:38px; background:#7c3aed; color:#fff; border:none; border-radius:8px; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:.02em; }
+  .offer-row button:hover { background:#6d28d9; }
 
   .empty { text-align:center; padding:4rem 1rem; color:var(--text-secondary); }
 
@@ -328,9 +331,10 @@
         btnBlockHtml = '<button class="buy-btn" data-id="'+p.id+'">Reservar</button>';
         if(p.allowOffers){
           btnBlockHtml += `
+            <div class="offer-divider">o envía una oferta</div>
             <div class="offer-row">
               <input type="number" placeholder="Tu oferta ($)" data-offer-input="${p.id}">
-              <button data-offer-btn="${p.id}">Ofertar</button>
+              <button data-offer-btn="${p.id}">Enviar oferta</button>
             </div>`;
         }
       } else if(p.status === 'reserved'){
