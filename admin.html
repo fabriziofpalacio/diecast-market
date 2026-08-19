@@ -247,6 +247,7 @@
       el('loginWrap').style.display = 'none';
       el('adminWrap').style.display = 'block';
       startCatalogListener();
+      startDraftsListener();
     } else {
       el('loginWrap').style.display = 'flex';
       el('adminWrap').style.display = 'none';
@@ -365,12 +366,17 @@
 
   // ---------- Live drafts list ----------
   let allDrafts = [];
-  const draftsQuery = query(collection(db, 'drafts'), orderBy('createdAt', 'desc'));
-  onSnapshot(draftsQuery, (snap)=>{
-    allDrafts = [];
-    snap.forEach(d=> allDrafts.push({ id: d.id, ...d.data() }));
-    renderDraftGrid();
-  });
+  let draftsListenerStarted = false;
+  function startDraftsListener(){
+    if(draftsListenerStarted) return;
+    draftsListenerStarted = true;
+    const draftsQuery = query(collection(db, 'drafts'), orderBy('createdAt', 'desc'));
+    onSnapshot(draftsQuery, (snap)=>{
+      allDrafts = [];
+      snap.forEach(d=> allDrafts.push({ id: d.id, ...d.data() }));
+      renderDraftGrid();
+    });
+  }
 
   function renderDraftGrid(){
     el('draftCount').textContent = allDrafts.length;
