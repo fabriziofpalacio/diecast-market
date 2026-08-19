@@ -37,7 +37,18 @@
   .login-box label { display:block; font-size:13px; color:var(--text-secondary); margin-bottom:4px; }
   .login-error { color:#b91c1c; font-size:13px; margin-top:8px; min-height:16px; }
 
-  .topbar { background:var(--surface-2); border-bottom:0.5px solid var(--border); padding:14px 20px; display:flex; align-items:center; justify-content:space-between; }
+  .topbar { position:relative; background:var(--surface-2); border-bottom:0.5px solid var(--border); padding:14px 20px 18px; display:flex; align-items:center; justify-content:space-between; }
+  .topbar::after {
+    content:''; position:absolute; left:0; right:0; bottom:0; height:6px;
+    background-image:
+      linear-gradient(45deg, #1a1a1a 25%, transparent 25%),
+      linear-gradient(-45deg, #1a1a1a 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #1a1a1a 75%),
+      linear-gradient(-45deg, transparent 75%, #1a1a1a 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+    background-color:#f3f1ea;
+  }
   .topbar h1 { font-family:'Teko',sans-serif; font-size:26px; margin:0; text-transform:uppercase; }
 
   .tabs { display:flex; gap:8px; padding:14px 20px 0; max-width:1000px; margin:0 auto; }
@@ -56,11 +67,14 @@
   .imgdrop { border:1px dashed var(--border-strong); border-radius:8px; padding:14px; text-align:center; cursor:pointer; font-size:13px; color:var(--text-secondary); }
   .imgdrop:hover { background:var(--surface-1); }
 
-  .staged-list { display:flex; flex-direction:column; gap:6px; margin:12px 0; }
-  .staged-item { display:flex; align-items:center; gap:8px; background:var(--surface-1); border-radius:8px; padding:6px 8px; font-size:13px; }
-  .staged-item img { width:32px; height:32px; object-fit:cover; border-radius:6px; }
-  .staged-item .n { flex:1; }
-  .staged-item button { height:24px; padding:0 8px; font-size:11px; }
+  .draft-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(80px, 1fr)); gap:8px; }
+  .draft-thumb { position:relative; cursor:pointer; border-radius:8px; overflow:hidden; aspect-ratio:1; background:var(--surface-1); border:2px solid transparent; }
+  .draft-thumb:hover { border-color:var(--accent); }
+  .draft-thumb.selected { border-color:var(--accent); }
+  .draft-thumb img { width:100%; height:100%; object-fit:cover; display:block; }
+  .draft-thumb .status-dot { position:absolute; top:4px; right:4px; width:10px; height:10px; border-radius:50%; border:2px solid #fff; }
+  .draft-thumb .dot-complete { background:#16a34a; }
+  .draft-thumb .dot-incomplete { background:#f59e0b; }
 
   .plist { display:flex; flex-direction:column; gap:10px; }
   .prow { background:var(--surface-2); border:0.5px solid var(--border); border-radius:10px; padding:10px; display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
@@ -142,18 +156,36 @@
             <button id="cancelEditBtn">Cancelar</button>
           </div>
 
-          <div id="addModeActions">
-            <div class="row2" style="margin-bottom:10px;">
-              <button id="stageBtn">+ Agregar a la lista</button>
-              <button id="publishBtn" class="secondary">Publicar todo</button>
+          <div id="draftModeActions" style="display:none; margin-bottom:10px;">
+            <div class="row2" style="margin-bottom:8px;">
+              <button id="publishDraftBtn" class="primary">Publicar esta pieza</button>
+              <button id="saveDraftBtn">Guardar borrador</button>
             </div>
-            <div class="staged-list" id="stagedList"></div>
+            <div class="row2">
+              <button id="deleteDraftBtn" class="danger">Eliminar borrador</button>
+              <button id="cancelDraftBtn">Cancelar</button>
+            </div>
+          </div>
+
+          <div id="addModeActions">
+            <button id="publishSingleBtn" class="primary" style="width:100%;">Publicar</button>
           </div>
 
           <div class="login-error" id="formStatus"></div>
         </div>
 
         <div>
+          <div class="panel" style="margin-bottom:16px;">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px;">
+              <h3 style="margin:0;">Pendientes por publicar (<span id="draftCount">0</span>)</h3>
+              <button id="publishAllDraftsBtn" class="secondary">Publicar todo el lote</button>
+            </div>
+            <div class="imgdrop" id="multiImgDrop" style="margin-bottom:12px;"><i class="ti ti-photos" style="font-size:20px"></i><div>Subir varias fotos a la vez</div></div>
+            <input type="file" id="multiImgInput" accept="image/*" multiple style="display:none">
+            <div class="draft-grid" id="draftGrid"></div>
+            <div class="status" id="draftEmptyMsg" style="display:none; padding:1rem;">No tienes piezas pendientes por publicar.</div>
+          </div>
+
           <h3 style="margin-top:0;">Catálogo (<span id="countLabel">0</span>)</h3>
           <div id="loadingMsg" class="status">Cargando...</div>
           <div class="plist" id="plist"></div>
@@ -273,6 +305,7 @@
   function clearForm(){
     el('pBrand').value = ''; el('pName').value = ''; el('pPrice').value = '';
     el('pAllowOffers').checked = false; el('pMinOffer').value = '';
+    el('pMinOffer').placeholder = '20000';
     el('minOfferField').style.display = 'none';
     currentImage = null;
     el('imgDropLabel').textContent = 'Subir imagen';
@@ -285,81 +318,126 @@
     if(ok) setTimeout(()=> s.textContent='', 2500);
   }
 
-  // ---------- Staging (bulk publish) ----------
-  let stagedProducts = [];
-
-  function renderStagedList(){
-    const wrap = el('stagedList');
-    wrap.innerHTML = '';
-    stagedProducts.forEach((p, idx)=>{
-      const row = document.createElement('div');
-      row.className = 'staged-item';
-      row.innerHTML = `
-        ${p.image ? `<img src="${p.image}">` : `<div style="width:32px;height:32px;background:var(--surface-1);border-radius:6px;"></div>`}
-        <div class="n">${p.name} — $${(p.price||0).toLocaleString('es-CO')}</div>
-        <button data-remove="${idx}">Quitar</button>
-      `;
-      row.querySelector('[data-remove]').addEventListener('click', ()=>{
-        stagedProducts.splice(idx,1);
-        renderStagedList();
-      });
-      wrap.appendChild(row);
+  // ---------- Compress a File into a base64 JPEG ----------
+  function compressImageFile(file){
+    return new Promise((resolve, reject)=>{
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        const img = new Image();
+        img.onload = ()=>{
+          const maxW = 700;
+          const scale = Math.min(1, maxW / img.width);
+          const canvas = document.createElement('canvas');
+          canvas.width = img.width * scale;
+          canvas.height = img.height * scale;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', 0.82));
+        };
+        img.onerror = reject;
+        img.src = ev.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
     });
   }
 
-  el('stageBtn').addEventListener('click', ()=>{
-    const data = readForm();
-    if(!data.name || !data.price){ setStatus('Ponle al menos el nombre y el precio.', false); return; }
-    if(data.allowOffers && !data.minOffer){ setStatus('Si acepta ofertas, ponle una oferta mínima.', false); return; }
-    stagedProducts.push(data);
-    renderStagedList();
-    clearForm();
-    setStatus('Agregado a la lista. Sigue agregando o dale "Publicar todo".', true);
+  // ---------- Multi-upload: each photo becomes a persisted draft immediately ----------
+  el('multiImgDrop').addEventListener('click', ()=> el('multiImgInput').click());
+  el('multiImgInput').addEventListener('change', async (e)=>{
+    const files = Array.from(e.target.files || []);
+    if(!files.length) return;
+    setStatus('Subiendo '+files.length+' foto(s)...', true);
+    try {
+      for(const file of files){
+        const image = await compressImageFile(file);
+        await addDoc(collection(db, 'drafts'), {
+          image, brand:'', name:'', price:null, allowOffers:false, minOffer:null,
+          createdAt: serverTimestamp()
+        });
+      }
+      setStatus('Listo, quedaron '+files.length+' pieza(s) pendientes por completar.', true);
+    } catch(err){
+      setStatus('Error subiendo fotos: ' + err.message, false);
+    }
+    e.target.value = '';
   });
 
-  el('publishBtn').addEventListener('click', async ()=>{
-    // If there's something filled in the form but not staged yet, stage it too
-    const data = readForm();
-    if(data.name && data.price) stagedProducts.push(data);
+  // ---------- Live drafts list ----------
+  let allDrafts = [];
+  const draftsQuery = query(collection(db, 'drafts'), orderBy('createdAt', 'desc'));
+  onSnapshot(draftsQuery, (snap)=>{
+    allDrafts = [];
+    snap.forEach(d=> allDrafts.push({ id: d.id, ...d.data() }));
+    renderDraftGrid();
+  });
 
-    if(!stagedProducts.length){ setStatus('No hay nada para publicar todavía.', false); return; }
-    if(stagedProducts.some(p=> p.allowOffers && !p.minOffer)){ setStatus('Alguna pieza acepta ofertas pero no tiene oferta mínima.', false); return; }
+  function renderDraftGrid(){
+    el('draftCount').textContent = allDrafts.length;
+    const grid = el('draftGrid');
+    grid.innerHTML = '';
+    el('draftEmptyMsg').style.display = allDrafts.length ? 'none' : 'block';
+    allDrafts.forEach(d=>{
+      const complete = !!(d.name && d.price);
+      const thumb = document.createElement('div');
+      thumb.className = 'draft-thumb' + (draftEditingId === d.id ? ' selected' : '');
+      thumb.innerHTML = `
+        ${d.image ? `<img src="${d.image}">` : ''}
+        <span class="status-dot ${complete ? 'dot-complete' : 'dot-incomplete'}" title="${complete ? 'Completo' : 'Falta info'}"></span>
+      `;
+      thumb.addEventListener('click', ()=> enterDraftMode(d));
+      grid.appendChild(thumb);
+    });
+  }
 
+  el('publishAllDraftsBtn').addEventListener('click', async ()=>{
+    const ready = allDrafts.filter(d=> d.name && d.price);
+    const notReady = allDrafts.length - ready.length;
+    if(!ready.length){ setStatus('Ninguna pieza pendiente tiene nombre y precio todavía.', false); return; }
+    if(ready.some(d=> d.allowOffers && !d.minOffer)){ setStatus('Alguna pieza acepta ofertas pero no tiene oferta mínima guardada.', false); return; }
     try {
       const batch = writeBatch(db);
       const productsCol = collection(db, 'products');
       const refsWithOffers = [];
-      stagedProducts.forEach(p=>{
+      ready.forEach(d=>{
         const ref = doc(productsCol);
         batch.set(ref, {
-          brand: p.brand || '',
-          name: p.name,
-          price: p.price,
-          image: p.image || '',
-          allowOffers: !!p.allowOffers,
-          status: 'available',
-          buyerId: null,
-          reservedBy: null,
-          reservedAt: null,
-          agreedPrice: null,
-          offerAmount: null,
-          createdAt: serverTimestamp()
+          brand: d.brand || '', name: d.name, price: d.price, image: d.image || '',
+          allowOffers: !!d.allowOffers, status:'available', buyerId:null, reservedBy:null,
+          reservedAt:null, agreedPrice:null, offerAmount:null, createdAt: serverTimestamp()
         });
-        if(p.allowOffers) refsWithOffers.push({ id: ref.id, minOffer: p.minOffer });
+        batch.delete(doc(db, 'drafts', d.id));
+        if(d.allowOffers) refsWithOffers.push({ id: ref.id, minOffer: d.minOffer });
       });
       await batch.commit();
-
-      // private floor docs (separate writes; each is auth-only and outside the batch's product writes)
       for(const r of refsWithOffers){
         await setDoc(doc(db, 'products', r.id, 'private', 'floor'), { minOffer: r.minOffer });
       }
+      let msg = '¡Publicadas '+ready.length+' pieza(s)!';
+      if(notReady) msg += ' ('+notReady+' quedaron pendientes por falta de nombre/precio.)';
+      setStatus(msg, true);
+      if(draftEditingId && ready.some(d=> d.id === draftEditingId)) exitDraftMode();
+    } catch(err){
+      setStatus('Error al publicar el lote: ' + err.message, false);
+    }
+  });
 
-      setStatus('¡Publicadas '+stagedProducts.length+' piezas!', true);
-      stagedProducts = [];
-      renderStagedList();
+  // ---------- Single quick "Publicar" (unchanged behavior: fills form, publishes immediately) ----------
+  el('publishSingleBtn').addEventListener('click', async ()=>{
+    const data = readForm();
+    if(!data.name || !data.price){ setStatus('Ponle al menos el nombre y el precio.', false); return; }
+    if(data.allowOffers && !data.minOffer){ setStatus('Si acepta ofertas, ponle una oferta mínima.', false); return; }
+    try {
+      const ref = await addDoc(collection(db, 'products'), {
+        brand: data.brand || '', name: data.name, price: data.price, image: data.image || '',
+        allowOffers: !!data.allowOffers, status:'available', buyerId:null, reservedBy:null,
+        reservedAt:null, agreedPrice:null, offerAmount:null, createdAt: serverTimestamp()
+      });
+      if(data.allowOffers) await setDoc(doc(db, 'products', ref.id, 'private', 'floor'), { minOffer: data.minOffer });
+      setStatus('¡Publicado!', true);
       clearForm();
-    } catch(e){
-      setStatus('Error al publicar: ' + e.message, false);
+    } catch(err){
+      setStatus('Error al publicar: ' + err.message, false);
     }
   });
 
@@ -367,6 +445,7 @@
   let editingId = null;
 
   function enterEditMode(p){
+    exitDraftMode(true);
     editingId = p.id;
     el('formTitle').textContent = 'Editar carrito';
     el('pBrand').value = p.brand || '';
@@ -379,6 +458,7 @@
     currentImage = p.image || null;
     el('imgDropLabel').textContent = currentImage ? 'Imagen actual · click para cambiar' : 'Subir imagen';
     el('editModeActions').style.display = 'grid';
+    el('draftModeActions').style.display = 'none';
     el('addModeActions').style.display = 'none';
     window.scrollTo({top:0, behavior:'smooth'});
   }
@@ -392,6 +472,87 @@
   }
 
   el('cancelEditBtn').addEventListener('click', exitEditMode);
+
+  // ---------- Draft edit mode ----------
+  let draftEditingId = null;
+
+  function enterDraftMode(d){
+    if(editingId) exitEditMode();
+    draftEditingId = d.id;
+    el('formTitle').textContent = 'Completar pieza pendiente';
+    el('pBrand').value = d.brand || '';
+    el('pName').value = d.name || '';
+    el('pPrice').value = d.price || '';
+    el('pAllowOffers').checked = !!d.allowOffers;
+    el('minOfferField').style.display = d.allowOffers ? 'block' : 'none';
+    el('pMinOffer').value = d.minOffer || '';
+    currentImage = d.image || null;
+    el('imgDropLabel').textContent = currentImage ? 'Imagen actual · click para cambiar' : 'Subir imagen';
+    el('draftModeActions').style.display = 'block';
+    el('editModeActions').style.display = 'none';
+    el('addModeActions').style.display = 'none';
+    renderDraftGrid();
+    window.scrollTo({top:0, behavior:'smooth'});
+  }
+
+  function exitDraftMode(skipClear){
+    draftEditingId = null;
+    el('formTitle').textContent = 'Agregar carrito';
+    el('draftModeActions').style.display = 'none';
+    el('addModeActions').style.display = 'block';
+    if(!skipClear) clearForm();
+    renderDraftGrid();
+  }
+
+  el('cancelDraftBtn').addEventListener('click', ()=> exitDraftMode());
+
+  el('saveDraftBtn').addEventListener('click', async ()=>{
+    if(!draftEditingId) return;
+    const data = readForm();
+    try {
+      await updateDoc(doc(db, 'drafts', draftEditingId), {
+        brand: data.brand || '', name: data.name || '', price: data.price || null,
+        allowOffers: !!data.allowOffers, minOffer: data.minOffer || null,
+        image: currentImage || ''
+      });
+      setStatus('Borrador guardado.', true);
+      exitDraftMode();
+    } catch(err){
+      setStatus('Error al guardar el borrador: ' + err.message, false);
+    }
+  });
+
+  el('publishDraftBtn').addEventListener('click', async ()=>{
+    if(!draftEditingId) return;
+    const data = readForm();
+    if(!data.name || !data.price){ setStatus('Ponle al menos el nombre y el precio antes de publicar.', false); return; }
+    if(data.allowOffers && !data.minOffer){ setStatus('Si acepta ofertas, ponle una oferta mínima.', false); return; }
+    try {
+      const ref = await addDoc(collection(db, 'products'), {
+        brand: data.brand || '', name: data.name, price: data.price, image: data.image || '',
+        allowOffers: !!data.allowOffers, status:'available', buyerId:null, reservedBy:null,
+        reservedAt:null, agreedPrice:null, offerAmount:null, createdAt: serverTimestamp()
+      });
+      if(data.allowOffers) await setDoc(doc(db, 'products', ref.id, 'private', 'floor'), { minOffer: data.minOffer });
+      await deleteDoc(doc(db, 'drafts', draftEditingId));
+      setStatus('¡Publicado!', true);
+      exitDraftMode();
+    } catch(err){
+      setStatus('Error al publicar: ' + err.message, false);
+    }
+  });
+
+  el('deleteDraftBtn').addEventListener('click', async ()=>{
+    if(!draftEditingId) return;
+    if(!confirm('¿Eliminar esta pieza pendiente? No se puede deshacer.')) return;
+    try {
+      await deleteDoc(doc(db, 'drafts', draftEditingId));
+      setStatus('Borrador eliminado.', true);
+      exitDraftMode();
+    } catch(err){
+      setStatus('Error al eliminar: ' + err.message, false);
+    }
+  });
 
   el('saveEditBtn').addEventListener('click', async ()=>{
     if(!editingId) return;
