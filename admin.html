@@ -142,6 +142,7 @@
           <div class="field"><label>Marca</label><input id="pBrand" placeholder="Hot Wheels"></div>
           <div class="field"><label>Nombre del modelo</label><input id="pName" placeholder="'73 Jeep J10"></div>
           <div class="field"><label>Precio (COP)</label><input id="pPrice" type="number" placeholder="35000"></div>
+          <div class="field"><label>Ciudad de venta</label><input id="pCity" placeholder="Barranquilla"></div>
 
           <div class="field">
             <label class="checkbox"><input type="checkbox" id="pAllowOffers"> Acepta ofertas</label>
@@ -298,13 +299,14 @@
     const brand = el('pBrand').value.trim();
     const name = el('pName').value.trim();
     const price = parseInt(el('pPrice').value, 10);
+    const city = el('pCity').value.trim();
     const allowOffers = el('pAllowOffers').checked;
     const minOffer = allowOffers ? parseInt(el('pMinOffer').value, 10) : null;
-    return { brand, name, price, allowOffers, minOffer, image: currentImage };
+    return { brand, name, price, city, allowOffers, minOffer, image: currentImage };
   }
 
   function clearForm(){
-    el('pBrand').value = ''; el('pName').value = ''; el('pPrice').value = '';
+    el('pBrand').value = ''; el('pName').value = ''; el('pPrice').value = ''; el('pCity').value = '';
     el('pAllowOffers').checked = false; el('pMinOffer').value = '';
     el('pMinOffer').placeholder = '20000';
     el('minOfferField').style.display = 'none';
@@ -353,7 +355,7 @@
       for(const file of files){
         const image = await compressImageFile(file);
         await addDoc(collection(db, 'drafts'), {
-          image, brand:'', name:'', price:null, allowOffers:false, minOffer:null,
+          image, brand:'', name:'', price:null, city:'', allowOffers:false, minOffer:null,
           createdAt: serverTimestamp()
         });
       }
@@ -408,7 +410,7 @@
       ready.forEach(d=>{
         const ref = doc(productsCol);
         batch.set(ref, {
-          brand: d.brand || '', name: d.name, price: d.price, image: d.image || '',
+          brand: d.brand || '', name: d.name, price: d.price, city: d.city || '', image: d.image || '',
           allowOffers: !!d.allowOffers, status:'available', buyerId:null, reservedBy:null,
           reservedAt:null, agreedPrice:null, offerAmount:null, createdAt: serverTimestamp()
         });
@@ -435,7 +437,7 @@
     if(data.allowOffers && !data.minOffer){ setStatus('Si acepta ofertas, ponle una oferta mínima.', false); return; }
     try {
       const ref = await addDoc(collection(db, 'products'), {
-        brand: data.brand || '', name: data.name, price: data.price, image: data.image || '',
+        brand: data.brand || '', name: data.name, price: data.price, city: data.city || '', image: data.image || '',
         allowOffers: !!data.allowOffers, status:'available', buyerId:null, reservedBy:null,
         reservedAt:null, agreedPrice:null, offerAmount:null, createdAt: serverTimestamp()
       });
@@ -457,6 +459,7 @@
     el('pBrand').value = p.brand || '';
     el('pName').value = p.name || '';
     el('pPrice').value = p.price || '';
+    el('pCity').value = p.city || '';
     el('pAllowOffers').checked = !!p.allowOffers;
     el('minOfferField').style.display = p.allowOffers ? 'block' : 'none';
     el('pMinOffer').value = '';
@@ -489,6 +492,7 @@
     el('pBrand').value = d.brand || '';
     el('pName').value = d.name || '';
     el('pPrice').value = d.price || '';
+    el('pCity').value = d.city || '';
     el('pAllowOffers').checked = !!d.allowOffers;
     el('minOfferField').style.display = d.allowOffers ? 'block' : 'none';
     el('pMinOffer').value = d.minOffer || '';
@@ -517,7 +521,7 @@
     const data = readForm();
     try {
       await updateDoc(doc(db, 'drafts', draftEditingId), {
-        brand: data.brand || '', name: data.name || '', price: data.price || null,
+        brand: data.brand || '', name: data.name || '', price: data.price || null, city: data.city || '',
         allowOffers: !!data.allowOffers, minOffer: data.minOffer || null,
         image: currentImage || ''
       });
@@ -535,7 +539,7 @@
     if(data.allowOffers && !data.minOffer){ setStatus('Si acepta ofertas, ponle una oferta mínima.', false); return; }
     try {
       const ref = await addDoc(collection(db, 'products'), {
-        brand: data.brand || '', name: data.name, price: data.price, image: data.image || '',
+        brand: data.brand || '', name: data.name, price: data.price, city: data.city || '', image: data.image || '',
         allowOffers: !!data.allowOffers, status:'available', buyerId:null, reservedBy:null,
         reservedAt:null, agreedPrice:null, offerAmount:null, createdAt: serverTimestamp()
       });
@@ -569,6 +573,7 @@
         brand: data.brand || '',
         name: data.name,
         price: data.price,
+        city: data.city || '',
         allowOffers: !!data.allowOffers
       };
       if(currentImage) updateData.image = currentImage;
@@ -621,7 +626,7 @@
         ${p.image ? `<img src="${p.image}">` : `<div style="width:56px;height:56px;border-radius:8px;background:var(--surface-1);flex-shrink:0;"></div>`}
         <div class="prow-info">
           <div class="prow-name">${p.name}</div>
-          <div class="prow-meta">${p.brand||''} · ${formatCOP(p.price)}</div>
+          <div class="prow-meta">${p.brand||''} · ${formatCOP(p.price)}${p.city ? ' · '+p.city : ''}</div>
           <div class="prow-status ${statusClass}">${statusLabel}</div>
           ${p.allowOffers ? '<span class="offer-badge">Acepta ofertas</span>' : ''}
           ${p.reservedBy ? `<div class="prow-buyer">${p.reservedBy}${p.reservedAt ? ' · ' + formatTimestamp(p.reservedAt) : ''}${p.offerAmount ? ' · oferta: '+formatCOP(p.offerAmount) : ''}</div>` : ''}
